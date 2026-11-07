@@ -56,6 +56,17 @@ function SimulatorWidget(node) {
     $node.find('.stepButton').click(simulator.debugExec);
     $node.find('.gotoButton').click(simulator.gotoAddr);
     $node.find('.notesButton').click(ui.showNotes);
+    $node.find('.memoryMapButton').click(function () {
+      var dialog = $node.find('.memoryMapDialog')[0];
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        message("The memory map popup requires a browser with HTML dialog support.");
+      }
+    });
+    $node.find('.closeMemoryMap').click(function () {
+      $node.find('.memoryMapDialog')[0].close();
+    });
     $node.find('.loadSampleButton').click(loadSelectedSample);
     $node.find('.openFileButton').click(function () {
       $node.find('.fileInput').click();

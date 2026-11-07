@@ -116,6 +116,129 @@ body {
   display: none;
 }
 
+.memoryMapDialog {
+  width: min(760px, calc(100% - 32px));
+  max-height: min(85vh, 760px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #d5c6c7;
+  border-top: 5px solid #b5121b;
+  border-radius: 8px;
+  color: #242424;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+}
+
+.memoryMapDialog::backdrop {
+  background: rgba(26, 20, 20, 0.58);
+}
+
+.memoryMapHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid #eadcdd;
+  background: #fffafa;
+}
+
+.memoryMapHeader h2,
+.memoryMapContent h3 {
+  margin: 0;
+  color: #9e1018;
+}
+
+.memoryMapHeader h2 {
+  font-size: 22px;
+}
+
+.memoryMapHeader p {
+  margin: 4px 0 0;
+  color: #655b5c;
+}
+
+.closeMemoryMap {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid #e1d7d7;
+  border-radius: 5px;
+  color: #761018;
+  background: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.closeMemoryMap:hover {
+  color: #fff;
+  background: #9e1018;
+}
+
+.memoryMapContent {
+  max-height: calc(85vh - 80px);
+  padding: 18px 22px 22px;
+  overflow: auto;
+}
+
+.memoryMapTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.memoryMapTable th,
+.memoryMapTable td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #eee6e6;
+  text-align: left;
+  vertical-align: top;
+}
+
+.memoryMapTable th {
+  color: #713238;
+  background: #fbf5f5;
+}
+
+.memoryMapTable td:first-child,
+.memoryMapTable td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.memoryMapContent h3 {
+  margin: 20px 0 8px;
+  font-size: 16px;
+}
+
+.memoryMapContent p {
+  margin: 8px 0;
+}
+
+.paletteGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+}
+
+.paletteGrid > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paletteSwatch {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #999;
+  border-radius: 3px;
+}
+
+.memoryMapNote {
+  margin-top: 18px !important;
+  padding: 10px 12px;
+  border-left: 3px solid #b5121b;
+  background: #fbf5f5;
+}
+
 .workbench {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
@@ -575,6 +698,18 @@ body {
 
   .codeEditor {
     height: 380px;
+  }
+
+  .memoryMapHeader,
+  .memoryMapContent {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .memoryMapTable th,
+  .memoryMapTable td {
+    padding: 7px 5px;
+    font-size: 12px;
   }
 
   .fileControls {

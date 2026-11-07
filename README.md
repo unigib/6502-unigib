@@ -45,7 +45,9 @@ screen should turn red. `BRK` stops the program.
   Programs start at address `$0600` by default.
 - Use **Samples** and **Load Sample** to put a built-in example in the editor.
   The included samples demonstrate screen colour, keyboard input, and labels
-  and loops.
+  and loops. To try the Snake program, select **Open ASM**, choose
+  `samples/snake.asm`, then assemble and run it. Steer Snake with the arrow
+  keys or on-screen arrow buttons.
 - **Open ASM** opens a local `.asm`, `.s`, `.6502`, or `.txt` file in the
   editor. **Save ASM** downloads the current source as an assembly file.
   Replacing non-empty editor contents asks for confirmation.
@@ -60,16 +62,19 @@ screen should turn red. `BRK` stops the program.
   instruction at the current program counter (PC); the editor highlights the
   corresponding source line. **Jump to ...** accepts a label or an address,
   such as `$0600`.
-- Click the emulated screen and use the keyboard arrow keys or WASD, or use the
-  on-screen directional buttons. The directional buttons and arrow keys send
-  key codes to `$00ff`; arrow-key codes are 37 (left), 38 (up), 39 (right), and
-  40 (down). Printable keys are also sent to `$00ff` as their character codes.
+- Click the emulated screen and use the keyboard arrow keys or the on-screen
+  directional buttons. The directional buttons and arrow keys send key codes
+  to `$00ff`; arrow-key codes are 37 (left), 38 (up), 39 (right), and 40
+  (down). Printable keys, including WASD, are sent as their character codes.
   The emulator records the most recent key; game movement and other key
-  behavior must be implemented by the assembly program.
+  behavior must be implemented by the assembly program. **Run** focuses the
+  screen so keyboard input can be sent to a running program immediately.
 - The CPU register panel displays A, X, Y, SP, PC, and status (P), along with
   the individual processor status flags, which are visually marked when set.
 - **Monitor** displays a range of memory. Enter the start address and length
   as hexadecimal values.
+- **Memory Map** opens a reference for the emulator's memory regions, screen
+  pixel layout, palette, and keyboard input codes. See the summary below.
 - **Notes** shows the emulator's memory map and screen colour values.
 
 ## Assembly syntax
@@ -112,13 +117,39 @@ screen should turn red. `BRK` stops the program.
   point remains `$0600`, so code assembled elsewhere will need a jump from that
   address.
 
-The emulator includes some teaching-oriented memory locations:
+## Emulator memory map
 
-- `$00fe` contains a new random byte on each instruction.
-- `$00ff` contains the code of the last key pressed. Printable keys use their
-  character code; arrow keys use codes 37 through 40.
-- `$0200` through `$05ff` map to the 32-by-32 screen, one byte per pixel. The
-  low four bits of each byte select its colour.
+| Address range | Purpose |
+| --- | --- |
+| `$0000-$00FD` | Zero page: general-purpose data and pointers. |
+| `$00FE` | A new pseudo-random byte is generated for each instruction. |
+| `$00FF` | The most recently pressed key's code. Printable keys use their character code; arrow keys use the codes below. |
+| `$0100-$01FF` | Stack page used by stack operations and subroutines. |
+| `$0200-$05FF` | 32-by-32 screen: one byte per pixel, stored left-to-right and top-to-bottom. |
+| `$0600` onward | Program code is assembled here by default. |
+
+For a screen pixel at column `x` and row `y` (each from 0 to 31), write its
+colour value to `$0200 + (y * 32) + x`. The low four bits select the colour:
+
+| Value | Colour | Value | Colour |
+| --- | --- | --- | --- |
+| `$0` | Black | `$8` | Orange |
+| `$1` | White | `$9` | Brown |
+| `$2` | Red | `$A` | Light red |
+| `$3` | Cyan | `$B` | Dark grey |
+| `$4` | Purple | `$C` | Grey |
+| `$5` | Green | `$D` | Light green |
+| `$6` | Blue | `$E` | Light blue |
+| `$7` | Yellow | `$F` | Light grey |
+
+Arrow-key input is written to `$00FF` as follows:
+
+| Key | Decimal code | Hex code |
+| --- | ---: | --- |
+| Left | 37 | `$25` |
+| Up | 38 | `$26` |
+| Right | 39 | `$27` |
+| Down | 40 | `$28` |
 
 ## Credits and license
 

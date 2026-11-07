@@ -23,6 +23,7 @@
         <input type="button" value="Hexdump" class="hexdumpButton" />
         <input type="button" value="Disassemble" class="disassembleButton" />
         <input type="button" value="Notes" class="notesButton" />
+        <input type="button" value="Memory Map" class="memoryMapButton" />
         <div class="fileControls">
           <label for="sampleSelect">Samples</label>
           <select class="sampleSelect" id="sampleSelect">
@@ -86,6 +87,56 @@
       </div>
       <div class="monitor"><pre><code></code></pre></div>
       <div class="messages"><pre><code></code></pre></div>
+
+      <dialog class="memoryMapDialog" aria-labelledby="memoryMapTitle">
+        <div class="memoryMapHeader">
+          <div>
+            <h2 id="memoryMapTitle">6502 Memory Map</h2>
+            <p>How this emulator uses its address space</p>
+          </div>
+          <button type="button" class="closeMemoryMap" aria-label="Close memory map">&times;</button>
+        </div>
+
+        <div class="memoryMapContent">
+          <table class="memoryMapTable">
+            <thead>
+              <tr><th>Address range</th><th>Size</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>$0000-$00FD</code></td><td>254 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
+              <tr><td><code>$00FE</code></td><td>1 byte</td><td>Random value; changes on each instruction</td></tr>
+              <tr><td><code>$00FF</code></td><td>1 byte</td><td>Last key pressed (keyboard input)</td></tr>
+              <tr><td><code>$0100-$01FF</code></td><td>256 bytes</td><td>Stack page, used by stack instructions and subroutines</td></tr>
+              <tr><td><code>$0200-$05FF</code></td><td>1024 bytes</td><td>32 &times; 32 screen pixels, one byte per pixel</td></tr>
+              <tr><td><code>$0600</code> onward</td><td>Variable</td><td>Program code starts here by default</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Screen pixel addresses</h3>
+          <p>Pixels are stored left to right, then top to bottom. For a pixel at column <code>x</code> and row <code>y</code> (both 0-31), its address is <code>$0200 + (y &times; 32) + x</code>. The low four bits of the byte select its colour.</p>
+
+          <h3>Colour values</h3>
+          <div class="paletteGrid">
+            <span><i class="paletteSwatch" style="background:#000000"></i><code>$0</code> Black</span>
+            <span><i class="paletteSwatch" style="background:#ffffff"></i><code>$1</code> White</span>
+            <span><i class="paletteSwatch" style="background:#880000"></i><code>$2</code> Red</span>
+            <span><i class="paletteSwatch" style="background:#aaffee"></i><code>$3</code> Cyan</span>
+            <span><i class="paletteSwatch" style="background:#cc44cc"></i><code>$4</code> Purple</span>
+            <span><i class="paletteSwatch" style="background:#00cc55"></i><code>$5</code> Green</span>
+            <span><i class="paletteSwatch" style="background:#0000aa"></i><code>$6</code> Blue</span>
+            <span><i class="paletteSwatch" style="background:#eeee77"></i><code>$7</code> Yellow</span>
+            <span><i class="paletteSwatch" style="background:#dd8855"></i><code>$8</code> Orange</span>
+            <span><i class="paletteSwatch" style="background:#664400"></i><code>$9</code> Brown</span>
+            <span><i class="paletteSwatch" style="background:#ff7777"></i><code>$A</code> Light red</span>
+            <span><i class="paletteSwatch" style="background:#333333"></i><code>$B</code> Dark grey</span>
+            <span><i class="paletteSwatch" style="background:#777777"></i><code>$C</code> Grey</span>
+            <span><i class="paletteSwatch" style="background:#aaff66"></i><code>$D</code> Light green</span>
+            <span><i class="paletteSwatch" style="background:#0088ff"></i><code>$E</code> Light blue</span>
+            <span><i class="paletteSwatch" style="background:#bbbbbb"></i><code>$F</code> Light grey</span>
+          </div>
+          <p class="memoryMapNote">The four arrow keys write their key codes to <code>$00FF</code>: left 37 (<code>$25</code>), up 38 (<code>$26</code>), right 39 (<code>$27</code>), and down 40 (<code>$28</code>). Each new key replaces the previous value.</p>
+        </div>
+      </dialog>
 
       <div class="notes" style="display: none">Notes:
 
