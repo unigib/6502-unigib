@@ -32,6 +32,9 @@ function SimulatorWidget(node) {
     });
     $node.find('.runButton').click(simulator.runBinary);
     $node.find('.runButton').click(simulator.stopDebugger);
+    $node.find('.runButton').click(function () {
+      $node.find('.screen').focus();
+    });
     $node.find('.resetButton').click(simulator.reset);
     $node.find('.hexdumpButton').click(assembler.hexdump);
     $node.find('.disassembleButton').click(assembler.disassemble);
