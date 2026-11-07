@@ -1,0 +1,12 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Editor temporary and swap files
+*.swp
+*.swo
+*~
+
+# Node.js dependencies and debug logs
+node_modules/
+npm-debug.log*
