@@ -12,6 +12,7 @@
 
 function SimulatorWidget(node) {
   var $node = $(node);
+  var currentFilename = "program.asm";
   var ui = UI();
   var display = Display();
   var memory = Memory();
@@ -47,10 +48,17 @@ function SimulatorWidget(node) {
     $node.find('.monitoring').change(function () {
       ui.toggleMonitor();
       simulator.toggleMonitor();
+      simulator.updateMonitor();
     });
     $node.find('.stepButton').click(simulator.debugExec);
     $node.find('.gotoButton').click(simulator.gotoAddr);
     $node.find('.notesButton').click(ui.showNotes);
+    $node.find('.loadSampleButton').click(loadSelectedSample);
+    $node.find('.openFileButton').click(function () {
+      $node.find('.fileInput').click();
+    });
+    $node.find('.fileInput').change(loadSelectedFile);
+    $node.find('.saveFileButton').click(saveAssemblyFile);
     $node.find('.code').keypress(simulator.stop);
     $node.find('.code').keypress(ui.initialize);
     $node.find('.code').on('input', function () {
@@ -63,8 +71,123 @@ function SimulatorWidget(node) {
       var editor = this;
       $node.find('.codeHighlight').scrollTop(editor.scrollTop);
       $node.find('.codeHighlight').scrollLeft(editor.scrollLeft);
+      $node.find('.lineNumbers').scrollTop(editor.scrollTop);
+    });
+    $node.find('.directionKey').on('mousedown', function (event) {
+      event.preventDefault();
+    });
+    $node.find('.directionKey').click(function () {
+      simulator.sendKey(parseInt($(this).attr('data-key-code'), 10));
+    });
+    $(document).keydown(function (event) {
+      var target = $(event.target);
+      if (target.is('input, textarea, select, [contenteditable="true"]')) {
+        return;
+      }
+      if (event.which >= 37 && event.which <= 40) {
+        simulator.sendKey(event.which);
+        event.preventDefault();
+      }
     });
     $(document).keypress(memory.storeKeypress);
+  }
+
+  function loadSelectedSample() {
+    var sampleName = $node.find('.sampleSelect').val();
+    var sample = ASSEMBLY_SAMPLES[sampleName];
+
+    if (!sample) {
+      message("Choose a sample before selecting Load Sample.");
+      return;
+    }
+
+    if (replaceCode(sample.code, sample.filename)) {
+      message("Loaded sample " + escapeMessage(sample.filename) + ".");
+    }
+    $node.find('.sampleSelect').val("");
+  }
+
+  function loadSelectedFile() {
+    var file = $node.find('.fileInput')[0].files[0];
+    var reader;
+
+    if (!file) {
+      return;
+    }
+
+    if (!window.FileReader) {
+      message("Opening assembly files is not supported by this browser.");
+      return;
+    }
+
+    if (!confirmCodeReplacement()) {
+      $node.find('.fileInput').val("");
+      return;
+    }
+
+    reader = new FileReader();
+    reader.onload = function () {
+      if (typeof reader.result !== "string") {
+        message("Unable to read the selected assembly file as text.");
+        return;
+      }
+      setEditorCode(reader.result, file.name);
+      message("Loaded " + escapeMessage(file.name) + ".");
+      $node.find('.fileInput').val("");
+    };
+    reader.onerror = function () {
+      message("Unable to read the selected assembly file.");
+      $node.find('.fileInput').val("");
+    };
+    reader.readAsText(file);
+  }
+
+  function saveAssemblyFile() {
+    var blob;
+    var url;
+    var link;
+    var urlApi = window.URL || window.webkitURL;
+
+    if (!window.Blob || !urlApi || !urlApi.createObjectURL) {
+      message("Saving assembly files is not supported by this browser.");
+      return;
+    }
+
+    blob = new Blob([$node.find('.code').val()], { type: "text/plain;charset=utf-8" });
+    url = urlApi.createObjectURL(blob);
+    link = document.createElement("a");
+    link.href = url;
+    link.download = currentFilename || "program.asm";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.setTimeout(function () {
+      urlApi.revokeObjectURL(url);
+    }, 1000);
+    message("Saved " + escapeMessage(link.download) + ".");
+  }
+
+  function confirmCodeReplacement() {
+    var currentCode = $node.find('.code').val();
+    return !currentCode || window.confirm("Replace the assembly currently in the editor?");
+  }
+
+  function replaceCode(code, filename) {
+    if ($node.find('.code').val() !== code && !confirmCodeReplacement()) {
+      return false;
+    }
+    setEditorCode(code, filename);
+    return true;
+  }
+
+  function setEditorCode(code, filename) {
+    $node.find('.code').val(code).trigger('input');
+    currentFilename = filename || "program.asm";
+    $node.find('.sampleSelect').val("");
+  }
+
+  function escapeMessage(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
   function stripText() {
@@ -136,7 +259,8 @@ function SimulatorWidget(node) {
     function renderCode(currentLine) {
       var lines = $node.find('.code').val().split("\n");
       var html = "";
-      var tokenPattern = /(;.*$)|(^\s*[A-Za-z_][\w]*:)|(\b(?:ADC|AND|ASL|BCC|BCS|BEQ|BIT|BMI|BNE|BPL|BRK|BVC|BVS|CLC|CLD|CLI|CLV|CMP|CPX|CPY|DEC|DEX|DEY|EOR|INC|INX|INY|JMP|JSR|LDA|LDX|LDY|LSR|NOP|ORA|PHA|PHP|PLA|PLP|ROL|ROR|RTI|RTS|SBC|SEC|SED|SEI|STA|STX|STY|TAX|TAY|TSX|TXA|TXS|TYA)\b)|(#?[$%][0-9a-f]+|#?\d+)|("[^"]*"|'[^']*')/gi;
+      var lineNumbers = "";
+      var tokenPattern = /(;.*$)|(^\s*[A-Za-z_][\w]*:)|(\b(?:ADC|AND|ASL|BCC|BCS|BEQ|BIT|BMI|BNE|BPL|BRK|BVC|BVS|CLC|CLD|CLI|CLV|CMP|CPX|CPY|DCB|DEC|DEFINE|DEX|DEY|EOR|INC|INX|INY|JMP|JSR|LDA|LDX|LDY|LSR|NOP|ORA|PHA|PHP|PLA|PLP|ROL|ROR|RTI|RTS|SBC|SEC|SED|SEI|STA|STX|STY|TAX|TAY|TSX|TXA|TXS|TYA)\b)|(#?[$%][0-9a-f]+|#?\d+)|("[^"]*"|'[^']*')/gi;
 
       for (var i = 0; i < lines.length; i++) {
         var source = escapeHtml(lines[i]);
@@ -148,9 +272,12 @@ function SimulatorWidget(node) {
         });
         var lineClass = i === currentLine ? "code-line code-line-current" : "code-line";
         html += '<span class="' + lineClass + '">' + highlighted + '</span>';
+        var numberClass = i === currentLine ? "line-number line-number-current" : "line-number";
+        lineNumbers += '<span class="' + numberClass + '">' + (i + 1) + '</span>';
       }
 
       $node.find('.codeHighlight code').html(html);
+      $node.find('.lineNumbers code').html(lineNumbers);
     }
 
     function escapeHtml(text) {
@@ -189,7 +316,32 @@ function SimulatorWidget(node) {
           editor.scrollTop = lineTop + lineHeight - editor.clientHeight;
         }
         $node.find('.codeHighlight').scrollTop(editor.scrollTop);
+        $node.find('.lineNumbers').scrollTop(editor.scrollTop);
       }
+    }
+
+    function showInputKey(keyCode) {
+      var keyNames = {
+        37: "Left arrow",
+        38: "Up arrow",
+        39: "Right arrow",
+        40: "Down arrow",
+        32: "Space"
+      };
+      var keyName = keyNames[keyCode];
+
+      if (!keyName) {
+        keyName = keyCode >= 33 && keyCode <= 126 ?
+          String.fromCharCode(keyCode) : "Key " + keyCode;
+      }
+
+      $node.find('.lastKeyValue').text(keyName);
+      $node.find('.lastKeyCode').text('$' + num2hex(keyCode));
+      $node.find('.directionKey').removeClass('directionKey-active');
+      $node.find('.directionKey[data-key-code="' + keyCode + '"]').addClass('directionKey-active');
+      setTimeout(function () {
+        $node.find('.directionKey[data-key-code="' + keyCode + '"]').removeClass('directionKey-active');
+      }, 180);
     }
 
     function assembleSuccess() {
@@ -214,7 +366,8 @@ function SimulatorWidget(node) {
       toggleMonitor: toggleMonitor,
       showNotes: showNotes,
       renderCode: renderCode,
-      highlightLine: highlightLine
+      highlightLine: highlightLine,
+      showInputKey: showInputKey
     };
   }
 
@@ -288,8 +441,10 @@ function SimulatorWidget(node) {
 
     // storeKeypress() - Store keycode in ZP $ff
     function storeKeypress(e) {
-      value = e.which;
+      var value = e.which;
       memory.storeByte(0xff, value);
+      ui.showInputKey(value);
+      simulator.updateMonitor();
     }
 
     function format(start, length) {
@@ -1622,14 +1777,34 @@ function SimulatorWidget(node) {
       updateDebugInfo();
     }
 
+    function sendKey(keyCode) {
+      memory.storeKeypress({ which: keyCode });
+    }
+
     function updateDebugInfo() {
-      var html = "A=$" + num2hex(regA) + " X=$" + num2hex(regX) + " Y=$" + num2hex(regY) + "<br />";
-      html += "SP=$" + num2hex(regSP) + " PC=$" + addr2hex(regPC);
-      html += "<br />";
-      html += "NV-BDIZC<br />";
-      for (var i = 7; i >=0; i--) {
-        html += regP >> i & 1;
+      var registerValues = [
+        ["A", num2hex(regA)],
+        ["X", num2hex(regX)],
+        ["Y", num2hex(regY)],
+        ["SP", num2hex(regSP)],
+        ["PC", addr2hex(regPC)],
+        ["P", num2hex(regP)]
+      ];
+      var flagNames = ["N", "V", "-", "B", "D", "I", "Z", "C"];
+      var html = '<div class="registerGrid">';
+
+      for (var r = 0; r < registerValues.length; r++) {
+        html += '<div class="registerCard"><span class="registerName">' + registerValues[r][0] +
+          '</span><strong class="registerValue">$' + registerValues[r][1] + '</strong></div>';
       }
+
+      html += '</div><div class="flagsRow"><span class="flagsTitle">Status flags</span>';
+      for (var i = 7; i >= 0; i--) {
+        var isSet = (regP >> i) & 1;
+        html += '<span class="flagBit' + (isSet ? ' is-set' : '') + '">' +
+          flagNames[7 - i] + ' <strong>' + isSet + '</strong></span>';
+      }
+      html += '</div>';
       $node.find('.minidebugger').html(html);
       updateMonitor();
       if (debug) {
@@ -1701,10 +1876,12 @@ function SimulatorWidget(node) {
       enableDebugger: enableDebugger,
       stopDebugger: stopDebugger,
       debugExec: debugExec,
+      sendKey: sendKey,
       gotoAddr: gotoAddr,
       reset: reset,
       stop: stop,
-      toggleMonitor: toggleMonitor
+      toggleMonitor: toggleMonitor,
+      updateMonitor: updateMonitor
     };
   }
 
@@ -1715,7 +1892,7 @@ function SimulatorWidget(node) {
     function indexLines(lines) {
       for (var i = 0; i < lines.length; i++) {
         if (!indexLine(lines[i])) {
-          message("**Label already defined at line " + (i + 1) + ":** " + lines[i]);
+          message("**Invalid or duplicate symbol definition at line " + (i + 1) + ":** " + lines[i]);
           return false;
         }
       }
@@ -1725,12 +1902,23 @@ function SimulatorWidget(node) {
     // indexLine(line) - extract label if line contains one and calculate position in memory.
     // Return false if label alread exists.
     function indexLine(input) {
+      var definition;
+
       // remove comments
       input = input.replace(/^(.*?);.*/, "$1");
 
       // trim line
       input = input.replace(/^\s+/, "");
       input = input.replace(/\s+$/, "");
+
+      definition = input.match(/^define\s+([A-Za-z_]\w*)\s+(\$[0-9a-f]+|%[01]+|\d+)$/i);
+      if (definition) {
+        var value = parseNumber(definition[2]);
+        if (value > 0xffff) {
+          return false;
+        }
+        return push(definition[1], value);
+      }
 
       // Figure out how many bytes this instruction takes
       var currentPC = assembler.getCurrentPC();
@@ -1739,17 +1927,27 @@ function SimulatorWidget(node) {
       // Find command or label
       if (input.match(/^\w+:/)) {
         var label = input.replace(/(^\w+):.*$/, "$1");
-        return push(label + "|" + currentPC);
+        return push(label, currentPC);
       }
       return true;
     }
 
+    function parseNumber(value) {
+      if (value.charAt(0) === "$") {
+        return parseInt(value.substring(1), 16);
+      }
+      if (value.charAt(0) === "%") {
+        return parseInt(value.substring(1), 2);
+      }
+      return parseInt(value, 10);
+    }
+
     // push() - Push label to array. Return false if label already exists.
-    function push(name) {
+    function push(name, value) {
       if (find(name)) {
         return false;
       }
-      labelIndex.push(name + "|");
+      labelIndex.push(name + "|" + value);
       return true;
     }
 
@@ -1784,14 +1982,14 @@ function SimulatorWidget(node) {
       for (var i = 0; i < labelIndex.length; i++) {
         nameAndAddr = labelIndex[i].split("|");
         if (name === nameAndAddr[0]) {
-          return (nameAndAddr[1]);
+          return Number(nameAndAddr[1]);
         }
       }
       return -1;
     }
 
     function displayMessage() {
-      var str = "Found " + labelIndex.length + " label";
+      var str = "Found " + labelIndex.length + " symbol";
       if (labelIndex.length !== 1) {
         str += "s";
       }
@@ -1974,6 +2172,10 @@ function SimulatorWidget(node) {
 
       command = command.toUpperCase();
 
+      if (command === "DEFINE") {
+        return /^define\s+[A-Za-z_]\w*\s+(\$[0-9a-f]+|%[01]+|\d+)$/i.test(input);
+      }
+
       if (input.match(/^\*\s*=\s*\$?[0-9a-f]*$/)) {
         // equ spotted
         param = input.replace(/^\s*\*\s*=\s*/, "");
@@ -2038,8 +2240,15 @@ function SimulatorWidget(node) {
           if (ch === "$") {
             number = parseInt(str.replace(/^\$/, ""), 16);
             pushByte(number);
+          } else if (ch === "%") {
+            number = parseInt(str.substring(1), 2);
+            pushByte(number);
           } else if (ch >= "0" && ch <= "9") {
             number = parseInt(str, 10);
+            pushByte(number);
+          } else if (/^\w+$/.test(str) && labels.find(str)) {
+            number = labels.getPC(str);
+            if (number < 0 || number > 255) { return false; }
             pushByte(number);
           } else {
             return false;
@@ -2093,6 +2302,13 @@ function SimulatorWidget(node) {
         pushByte(value);
         return true;
       }
+      if (/^#\w+$/.test(param) && labels.find(param.substring(1))) {
+        value = labels.getPC(param.substring(1));
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
+        pushByte(value);
+        return true;
+      }
       // Label lo/hi
       if (param.match(/^#[<>]\w+$/)) {
         label = param.replace(/^#[<>](\w+)$/, "$1");
@@ -2134,13 +2350,21 @@ function SimulatorWidget(node) {
 
     // checkIndirectX() - Check if param is indirect X and push value
     function checkIndirectX(param, opcode) {
-      var value;
+      var value, label;
       if (opcode === null) { return false; }
       if (param.match(/^\(\$[0-9a-f]{1,2},X\)$/i)) {
-        pushByte(opcode);
         value = param.replace(/^\(\$([0-9a-f]{1,2}).*$/i, "$1");
         if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
         pushByte(parseInt(value, 16));
+        return true;
+      }
+      label = param.match(/^\((\w+),X\)$/i);
+      if (label && labels.find(label[1])) {
+        value = labels.getPC(label[1]);
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
+        pushByte(value);
         return true;
       }
       return false;
@@ -2148,13 +2372,21 @@ function SimulatorWidget(node) {
 
     // checkIndirectY() - Check if param is indirect Y and push value
     function checkIndirectY(param, opcode) {
-      var value;
+      var value, label;
       if (opcode === null) { return false; }
       if (param.match(/^\(\$[0-9a-f]{1,2}\),Y$/i)) {
         pushByte(opcode);
         value = param.replace(/^\([\$]([0-9a-f]{1,2}).*$/i, "$1");
         if (value < 0 || value > 255) { return false; }
         pushByte(parseInt(value, 16));
+        return true;
+      }
+      label = param.match(/^\((\w+)\),Y$/i);
+      if (label && labels.find(label[1])) {
+        value = labels.getPC(label[1]);
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
+        pushByte(value);
         return true;
       }
       return false;
@@ -2182,6 +2414,13 @@ function SimulatorWidget(node) {
       }
       if (param.match(/^[0-9]{1,3}$/i)) {
         value = parseInt(param, 10);
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
+        pushByte(value);
+        return true;
+      }
+      if (/^\w+$/.test(param) && labels.find(param)) {
+        value = labels.getPC(param);
         if (value < 0 || value > 255) { return false; }
         pushByte(opcode);
         pushByte(value);
@@ -2271,6 +2510,13 @@ function SimulatorWidget(node) {
         pushByte(value);
         return true;
       }
+      if (/^\w+,X$/i.test(param)) {
+        value = labels.getPC(param.replace(/,X$/i, ""));
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
+        pushByte(value);
+        return true;
+      }
       return false;
     }
 
@@ -2290,6 +2536,13 @@ function SimulatorWidget(node) {
         number = param.replace(/^([0-9]{1,3}),Y/i, "$1");
         value = parseInt(number, 10);
         if (value < 0 || value > 255) { return false; }
+        pushByte(value);
+        return true;
+      }
+      if (/^\w+,Y$/i.test(param)) {
+        value = labels.getPC(param.replace(/,Y$/i, ""));
+        if (value < 0 || value > 255) { return false; }
+        pushByte(opcode);
         pushByte(value);
         return true;
       }

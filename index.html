@@ -23,27 +23,56 @@
         <input type="button" value="Hexdump" class="hexdumpButton" />
         <input type="button" value="Disassemble" class="disassembleButton" />
         <input type="button" value="Notes" class="notesButton" />
+        <div class="fileControls">
+          <label for="sampleSelect">Samples</label>
+          <select class="sampleSelect" id="sampleSelect">
+            <option value="">Choose a sample...</option>
+            <option value="screen-colour">Screen colour</option>
+            <option value="keyboard-input">Keyboard input</option>
+            <option value="label-loop">Labels and loops</option>
+          </select>
+          <input type="button" value="Load Sample" class="loadSampleButton" />
+          <input type="button" value="Open ASM" class="openFileButton" />
+          <input type="button" value="Save ASM" class="saveFileButton" />
+          <input type="file" class="fileInput" accept=".asm,.s,.6502,.txt,text/plain" />
+        </div>
       </div>
 
       <div class="workbench">
-        <div class="codeEditor">
-          <pre class="codeHighlight" aria-hidden="true"><code></code></pre>
-          <textarea class="code" wrap="off" spellcheck="false" aria-label="6502 assembly source code"></textarea>
-        </div>
-
-        <div class="toolsPanel">
-          <canvas class="screen" width="160" height="160"></canvas>
-
-          <div class="debugger">
-            <input type="checkbox" class="debug" name="debug" />
-            <label for="debug">Debugger</label>
-            <div class="minidebugger"></div>
-            <div class="buttons">
-              <input type="button" value="Step" class="stepButton" />
-              <input type="button" value="Jump to ..." class="gotoButton" />
-            </div>
+        <section class="editorColumn" aria-label="Assembly editor and CPU state">
+          <div class="codeEditor">
+            <pre class="lineNumbers" aria-hidden="true"><code></code></pre>
+            <pre class="codeHighlight" aria-hidden="true"><code></code></pre>
+            <textarea class="code" wrap="off" spellcheck="false" aria-label="6502 assembly source code"></textarea>
           </div>
-        </div>
+
+          <section class="registerPanel" aria-label="CPU registers">
+            <div class="panelHeading">
+              <h2>CPU Registers</h2>
+              <div class="debugControls">
+                <label><input type="checkbox" class="debug" name="debug" /> Debug</label>
+                <input type="button" value="Step" class="stepButton" />
+                <input type="button" value="Jump to ..." class="gotoButton" />
+              </div>
+            </div>
+            <div class="minidebugger"></div>
+          </section>
+        </section>
+
+        <section class="emulatorPanel" aria-label="Emulated screen and controls">
+          <h2>Emulator</h2>
+          <div class="screenFrame">
+            <canvas class="screen" width="320" height="320" tabindex="0" aria-label="Emulated 6502 screen. Focus here to send keyboard input."></canvas>
+          </div>
+          <p class="keyHelp">Click the screen, then use the arrow keys or WASD.</p>
+          <div class="directionPad" aria-label="Directional controls">
+            <button type="button" class="directionKey directionUp" data-key-code="38" aria-label="Up">↑</button>
+            <button type="button" class="directionKey directionLeft" data-key-code="37" aria-label="Left">←</button>
+            <button type="button" class="directionKey directionDown" data-key-code="40" aria-label="Down">↓</button>
+            <button type="button" class="directionKey directionRight" data-key-code="39" aria-label="Right">→</button>
+          </div>
+          <div class="lastKey" aria-live="polite">Last key: <strong class="lastKeyValue">None</strong><span class="lastKeyCode">$00</span></div>
+        </section>
       </div>
 
       <div class="monitorControls">
@@ -61,7 +90,9 @@
       <div class="notes" style="display: none">Notes:
 
 Memory location $fe contains a new random byte on every instruction.
-Memory location $ff contains the ascii code of the last key pressed.
+Memory location $ff contains the code of the last key pressed. Printable keys
+use their character code; arrow keys use codes 37 (left), 38 (up), 39 (right),
+and 40 (down).
 
 Memory locations $200 to $5ff map to the screen pixels. Different values will
 draw different colour pixels. The colours are:
@@ -86,6 +117,7 @@ $f: Light grey
 
     <script src="es5-shim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="samples.js"></script>
     <script src="assembler.js"></script>
   </body>
 </html>

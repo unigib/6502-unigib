@@ -10,9 +10,9 @@ body {
 }
 
 .widget {
-  width: min(1120px, calc(100% - 32px));
-  margin: 30px auto;
-  font-size: 12px;
+  width: min(1440px, calc(100% - 40px));
+  margin: 24px auto;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -47,13 +47,22 @@ body {
 }
 
 .buttons {
-  margin: 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.buttons input[type="button"],
+.fileControls select {
+  padding: 7px 12px;
+  border: 1px solid #9e1018;
+  border-radius: 4px;
+  font: inherit;
 }
 
 .buttons input[type="button"] {
-  padding: 5px 10px;
-  border: 1px solid #9e1018;
-  border-radius: 3px;
   color: #fff;
   background: #b5121b;
   cursor: pointer;
@@ -69,40 +78,123 @@ body {
   cursor: default;
 }
 
-.start, .length {
-  width: 50px;
+.fileControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+  padding: 5px 8px;
+  border: 1px solid #e1d7d7;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.fileControls label {
+  color: #6a4548;
+  font-weight: bold;
+}
+
+.fileControls select {
+  min-width: 150px;
+  color: #333;
+  background: #fff;
+}
+
+.fileControls input[type="button"] {
+  padding: 6px 9px;
+  color: #9e1018;
+  background: #fff;
+}
+
+.fileControls input[type="button"]:hover {
+  color: #fff;
+  background: #9e1018;
+}
+
+.fileInput {
+  display: none;
 }
 
 .workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
+  gap: 20px;
+  align-items: start;
+}
+
+.editorColumn {
+  display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .codeEditor {
   position: relative;
-  height: 420px;
+  height: 520px;
   min-width: 0;
   overflow: hidden;
   border: 1px solid #334155;
-  border-radius: 4px;
+  border-radius: 6px;
   background: #111827;
 }
 
 .codeHighlight,
 .code {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 48px;
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 8px;
+  padding: 12px;
   border: 0;
   font-family: Consolas, "Courier New", monospace;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   tab-size: 2;
   white-space: pre;
+}
+
+.codeHighlight,
+.code {
+  width: calc(100% - 48px);
+}
+
+.lineNumbers {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 48px;
+  margin: 0;
+  padding: 12px 8px;
+  overflow: hidden;
+  border-right: 1px solid #334155;
+  color: #64748b;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.55;
+  pointer-events: none;
+  text-align: right;
+  white-space: pre;
+}
+
+.lineNumbers code {
+  font: inherit;
+}
+
+.line-number {
+  display: block;
+  min-height: 1.55em;
+  padding-right: 4px;
+}
+
+.line-number-current {
+  color: #fff;
+  background: #5b3035;
 }
 
 .codeHighlight {
@@ -117,12 +209,12 @@ body {
 
 .code-line {
   display: block;
-  min-height: 1.5em;
+  min-height: 1.55em;
 }
 
 .code-line-current {
   background: #5b3035;
-  box-shadow: 8px 0 #5b3035, -8px 0 #5b3035;
+  box-shadow: 12px 0 #5b3035, -12px 0 #5b3035;
 }
 
 .code {
@@ -136,7 +228,7 @@ body {
 }
 
 .code::selection {
-  background: rgba(59, 130, 246, 0.4);
+  background: rgba(181, 18, 27, 0.45);
 }
 
 .syntax-comment {
@@ -161,32 +253,249 @@ body {
   color: #86efac;
 }
 
-.toolsPanel {
+.registerPanel,
+.emulatorPanel {
+  border: 1px solid #e1d7d7;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(58, 18, 20, 0.06);
+}
+
+.registerPanel {
+  padding: 14px;
+}
+
+.panelHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.panelHeading h2,
+.emulatorPanel h2 {
+  margin: 0;
+  color: #292929;
+  font-size: 18px;
+}
+
+.debugControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.debugControls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+.debugControls input[type="button"] {
+  padding: 5px 9px;
+  border: 1px solid #9e1018;
+  border-radius: 4px;
+  color: #9e1018;
+  background: #fff;
+  cursor: pointer;
+}
+
+.debugControls input[type="button"]:hover:not(:disabled) {
+  color: #fff;
+  background: #9e1018;
+}
+
+.debugControls input[type="button"]:disabled {
+  border-color: #d3c6c7;
+  color: #918687;
+  cursor: default;
+}
+
+.minidebugger {
+  display: grid;
+  gap: 12px;
+}
+
+.registerGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(72px, 1fr));
+  gap: 10px;
+}
+
+.registerCard {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #eadcdd;
+  border-radius: 5px;
+  background: #fcf8f8;
+}
+
+.registerName {
+  color: #706263;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.registerValue {
+  color: #91121a;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+}
+
+.flagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.flagsTitle {
+  margin-right: 4px;
+  color: #555;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.flagBit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #656565;
+  background: #f6f6f6;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+
+.flagBit strong {
+  color: #aaa;
+}
+
+.flagBit.is-set {
+  border-color: #d9a3a6;
+  color: #811018;
+  background: #fff0f1;
+}
+
+.flagBit.is-set strong {
+  color: #b5121b;
+}
+
+.emulatorPanel {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  padding: 18px 16px;
+}
+
+.emulatorPanel h2 {
+  align-self: flex-start;
+}
+
+.screenFrame {
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  padding: 8px;
+  border: 1px solid #d6cece;
+  border-radius: 12px;
+  background: #eee;
 }
 
 .screen {
-  width: 160px;
-  height: 160px;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  background: #000;
   image-rendering: pixelated;
+  outline-color: #b5121b;
 }
 
-.debugger {
-  width: 100%;
-  min-height: 145px;
-  padding: 8px 4px;
-  border: 1px solid #b5121b;
-  border-radius: 4px;
+.keyHelp {
+  margin: 0;
+  color: #605859;
+  font-size: 13px;
   text-align: center;
 }
 
-.minidebugger {
-  margin-top: 6px;
+.directionPad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(2, 58px);
+  gap: 8px;
+  justify-content: center;
+}
+
+.directionKey {
+  display: grid;
+  place-items: center;
+  border: 1px solid #d7c9ca;
+  border-radius: 10px;
+  color: #8f1018;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(50, 20, 20, 0.12);
+  font-size: 28px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.directionKey:hover,
+.directionKey:focus-visible,
+.directionKey-active {
+  border-color: #9e1018;
+  color: #fff;
+  background: #b5121b;
+  outline: none;
+}
+
+.directionUp {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.directionLeft {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.directionDown {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.directionRight {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.lastKey {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  color: #5f5556;
+  font-size: 13px;
+}
+
+.lastKey strong,
+.lastKeyCode {
+  color: #8f1018;
   font-family: Consolas, "Courier New", monospace;
-  font-size: 11px;
 }
 
 .monitorControls {
@@ -194,7 +503,12 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  margin: 14px 0 10px;
+  margin: 16px 0 10px;
+}
+
+.start,
+.length {
+  width: 56px;
 }
 
 .monitorControls input {
@@ -204,21 +518,22 @@ body {
 .monitor,
 .messages {
   width: 100%;
-  padding: 6px;
-  border: 1px solid #999;
+  padding: 8px;
+  border: 1px solid #c9c1c1;
   overflow: auto;
+  border-radius: 4px;
 }
 
 .monitor {
   height: 100px;
   margin: 10px 0;
-  background-color: #ddd;
+  background-color: #eee;
   display: none;
 }
 
 .messages {
   height: 100px;
-  background-color: #eee;
+  background-color: #fff;
   text-align: left;
   font-size: 12px;
   color: #444;
@@ -229,10 +544,29 @@ body {
   background: inherit;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
+  .widget {
+    width: min(900px, calc(100% - 32px));
+    margin: 16px auto;
+  }
+
+  .workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 14px;
+  }
+
+  .codeEditor {
+    height: 480px;
+  }
+
+  .registerGrid {
+    grid-template-columns: repeat(3, minmax(72px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
   .widget {
     width: calc(100% - 24px);
-    margin: 16px auto;
   }
 
   .workbench {
@@ -240,36 +574,47 @@ body {
   }
 
   .codeEditor {
-    height: 360px;
+    height: 380px;
   }
 
-  .brandHeader {
-    gap: 12px;
-    padding: 10px;
+  .fileControls {
+    width: 100%;
+    margin-left: 0;
   }
 
-  .brandLogo {
-    width: 78px;
-    height: 78px;
+  .emulatorPanel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.8fr);
+    justify-items: center;
   }
 
-  .brandHeader h1 {
-    font-size: 20px;
+  .emulatorPanel h2,
+  .screenFrame,
+  .lastKey {
+    grid-column: 1 / -1;
   }
 
-  .toolsPanel {
-    flex-direction: row;
-    align-items: flex-start;
+  .emulatorPanel h2 {
+    justify-self: start;
   }
 
-  .debugger {
-    max-width: 300px;
+  .screenFrame {
+    width: min(100%, 360px);
+  }
+
+  .keyHelp {
+    align-self: end;
+  }
+
+  .directionPad {
+    align-self: start;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   .brandHeader {
-    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
   }
 
   .brandLogo {
@@ -285,12 +630,28 @@ body {
     font-size: 12px;
   }
 
-  .toolsPanel {
-    flex-direction: column;
-    align-items: stretch;
+  .codeEditor {
+    height: 340px;
   }
 
-  .screen {
-    align-self: center;
+  .panelHeading {
+    align-items: flex-start;
+  }
+
+  .registerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .emulatorPanel {
+    display: flex;
+  }
+
+  .screenFrame {
+    width: min(100%, 360px);
+  }
+
+  .directionPad {
+    grid-template-columns: repeat(3, 58px);
+    grid-template-rows: repeat(2, 54px);
   }
 }
