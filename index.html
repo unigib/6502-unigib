@@ -24,6 +24,19 @@
         <input type="button" value="Disassemble" class="disassembleButton" />
         <input type="button" value="Notes" class="notesButton" />
         <input type="button" value="Memory Map" class="memoryMapButton" />
+        <div class="frequencyControl">
+          <label for="frequencySelect">Execution rate</label>
+          <select class="frequencySelect" id="frequencySelect" aria-describedby="frequencyHelp">
+            <option value="1000000">1 MHz</option>
+            <option value="100000">100 kHz</option>
+            <option value="10000">10 kHz</option>
+            <option value="1000">1 kHz</option>
+            <option value="100">100 Hz</option>
+            <option value="10">10 Hz</option>
+            <option value="1">1 Hz</option>
+          </select>
+          <span id="frequencyHelp" class="frequencyHelp">Approximate instructions per second</span>
+        </div>
         <div class="fileControls">
           <label for="sampleSelect">Samples</label>
           <select class="sampleSelect" id="sampleSelect">
@@ -31,6 +44,9 @@
             <option value="screen-colour">Screen colour</option>
             <option value="keyboard-input">Keyboard input</option>
             <option value="label-loop">Labels and loops</option>
+            <option value="seven-segment">Seven-segment display</option>
+            <option value="seven-segment-counter">Seven-segment counter</option>
+            <option value="seven-segment-register">Display byte in A</option>
           </select>
           <input type="button" value="Load Sample" class="loadSampleButton" />
           <input type="button" value="Open ASM" class="openFileButton" />
@@ -65,6 +81,11 @@
           <div class="screenFrame">
             <canvas class="screen" width="320" height="320" tabindex="0" aria-label="Emulated 6502 screen. Focus here to send keyboard input."></canvas>
           </div>
+          <section class="sevenSegmentPanel" aria-label="Memory-mapped hexadecimal display">
+            <h3>Seven-segment display <span>$00E0-$00EF</span></h3>
+            <div class="sevenSegmentDisplay" role="img" aria-label="16-digit hexadecimal display: 0000000000000000"></div>
+            <p>Write to each address to show its low hexadecimal digit (0-F).</p>
+          </section>
           <p class="keyHelp">Click the screen, then use the arrow keys or WASD.</p>
           <div class="directionPad" aria-label="Directional controls">
             <button type="button" class="directionKey directionUp" data-key-code="38" aria-label="Up">↑</button>
@@ -103,7 +124,9 @@
               <tr><th>Address range</th><th>Size</th><th>Purpose</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>$0000-$00FD</code></td><td>254 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
+              <tr><td><code>$0000-$00DF</code></td><td>224 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
+              <tr><td><code>$00E0-$00EF</code></td><td>16 bytes</td><td>Seven-segment display: one hexadecimal digit per address, from left to right</td></tr>
+              <tr><td><code>$00F0-$00FD</code></td><td>14 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
               <tr><td><code>$00FE</code></td><td>1 byte</td><td>Random value; changes on each instruction</td></tr>
               <tr><td><code>$00FF</code></td><td>1 byte</td><td>Last key pressed (keyboard input)</td></tr>
               <tr><td><code>$0100-$01FF</code></td><td>256 bytes</td><td>Stack page, used by stack instructions and subroutines</td></tr>
@@ -111,6 +134,9 @@
               <tr><td><code>$0600</code> onward</td><td>Variable</td><td>Program code starts here by default</td></tr>
             </tbody>
           </table>
+
+          <h3>Seven-segment display</h3>
+          <p>Addresses <code>$00E0-$00EF</code> control 16 digits from left to right. Writing a byte displays its low four bits as a hexadecimal digit from <code>0</code> to <code>F</code>. For example, <code>LDA #$0A</code> followed by <code>STA $00E0</code> displays <code>A</code> in the leftmost digit. Write multiple digits to show a multi-digit value.</p>
 
           <h3>Screen pixel addresses</h3>
           <p>Pixels are stored left to right, then top to bottom. For a pixel at column <code>x</code> and row <code>y</code> (both 0-31), its address is <code>$0200 + (y &times; 32) + x</code>. The low four bits of the byte select its colour.</p>
@@ -144,6 +170,10 @@ Memory location $fe contains a new random byte on every instruction.
 Memory location $ff contains the code of the last key pressed. Printable keys
 use their character code; arrow keys use codes 37 (left), 38 (up), 39 (right),
 and 40 (down).
+
+Memory locations $e0 to $ef control the 16-digit seven-segment display.
+Each address displays the low four bits of the written byte as one hexadecimal
+digit, from left to right.
 
 Memory locations $200 to $5ff map to the screen pixels. Different values will
 draw different colour pixels. The colours are:

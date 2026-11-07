@@ -35,6 +35,9 @@ function SimulatorWidget(node) {
     $node.find('.runButton').click(function () {
       $node.find('.screen').focus();
     });
+    $node.find('.frequencySelect').change(function () {
+      simulator.setFrequency(parseInt(this.value, 10));
+    });
     $node.find('.resetButton').click(simulator.reset);
     $node.find('.hexdumpButton').click(assembler.hexdump);
     $node.find('.disassembleButton').click(assembler.disassemble);
@@ -407,12 +410,55 @@ function SimulatorWidget(node) {
       height = canvas.height;
       pixelSize = width / numX;
       ctx = canvas.getContext('2d');
+      initializeSevenSegmentDisplay();
       reset();
     }
 
     function reset() {
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, width, height);
+    }
+
+    function initializeSevenSegmentDisplay() {
+      var html = "";
+      var segments = ["a", "b", "c", "d", "e", "f", "g"];
+      for (var i = 0; i < 16; i++) {
+        html += '<span class="sevenSegmentDigit" aria-hidden="true">';
+        for (var j = 0; j < segments.length; j++) {
+          html += '<span class="segment segment-' + segments[j] + '"></span>';
+        }
+        html += '</span>';
+      }
+      $node.find('.sevenSegmentDisplay').html(html);
+      for (var digit = 0; digit < 16; digit++) {
+        updateSevenSegment(0xe0 + digit);
+      }
+    }
+
+    function updateSevenSegment(addr) {
+      var patterns = [
+        "abcdef", "bc", "abdeg", "abcdg",
+        "bcfg", "acdfg", "acdefg", "abc",
+        "abcdefg", "abcdfg", "abcefg", "cdefg",
+        "adef", "bcdeg", "adefg", "aefg"
+      ];
+      var digitIndex = addr - 0xe0;
+      var value = (memory.get(addr) || 0) & 0x0f;
+      var activeSegments = patterns[value];
+      var segments = ["a", "b", "c", "d", "e", "f", "g"];
+      var $digit = $node.find('.sevenSegmentDigit').eq(digitIndex);
+      for (var i = 0; i < segments.length; i++) {
+        $digit.find('.segment-' + segments[i]).toggleClass(
+          "is-on", activeSegments.indexOf(segments[i]) !== -1
+        );
+      }
+      var displayText = "";
+      for (var position = 0; position < 16; position++) {
+        displayText += "0123456789ABCDEF"[(memory.get(0xe0 + position) || 0) & 0x0f];
+      }
+      $node.find('.sevenSegmentDisplay').attr(
+        'aria-label', '16-digit hexadecimal display: ' + displayText
+      );
     }
 
     function updatePixel(addr) {
@@ -425,7 +471,8 @@ function SimulatorWidget(node) {
     return {
       initialize: initialize,
       reset: reset,
-      updatePixel: updatePixel
+      updatePixel: updatePixel,
+      updateSevenSegment: updateSevenSegment
     };
   }
 
@@ -433,7 +480,11 @@ function SimulatorWidget(node) {
     var memArray = new Array(0x600);
 
     function set(addr, val) {
-      return memArray[addr] = val;
+      memArray[addr] = val;
+      if ((addr >= 0xe0) && (addr <= 0xef)) {
+        display.updateSevenSegment(addr);
+      }
+      return memArray[addr];
     }
 
     function get(addr) {
@@ -500,6 +551,10 @@ function SimulatorWidget(node) {
     var debug = false;
     var monitoring = false;
     var executeId;
+    var instructionFrequency = parseInt($node.find('.frequencySelect').val(), 10);
+    var instructionAccumulator = 0;
+    var lastExecutionTime = 0;
+    var maxInstructionsPerTick = 15000;
 
     //set zero and negative processor flags based on result
     function setNVflags(value) {
@@ -1724,19 +1779,37 @@ function SimulatorWidget(node) {
       } else {
         ui.play();
         codeRunning = true;
+        instructionAccumulator = 0;
+        lastExecutionTime = Date.now();
         executeId = setInterval(multiExecute, 15);
       }
     }
 
     function multiExecute() {
       if (!debug) {
-        // use a prime number of iterations to avoid aliasing effects
+        var currentTime = Date.now();
+        var elapsed = currentTime - lastExecutionTime;
+        lastExecutionTime = currentTime;
+        instructionAccumulator = Math.min(
+          instructionAccumulator + (instructionFrequency * elapsed / 1000),
+          maxInstructionsPerTick
+        );
+        var instructionsToRun = Math.floor(instructionAccumulator);
+        instructionAccumulator -= instructionsToRun;
 
-        for (var w = 0; w < 97; w++) {
+        for (var w = 0; w < instructionsToRun; w++) {
           execute();
         }
+        if (instructionsToRun === 0) { return; }
       }
       updateDebugInfo();
+    }
+
+    function setFrequency(frequency) {
+      if (frequency > 0) {
+        instructionFrequency = frequency;
+        instructionAccumulator = 0;
+      }
     }
 
 
@@ -1821,7 +1894,7 @@ function SimulatorWidget(node) {
       html += '</div>';
       $node.find('.minidebugger').html(html);
       updateMonitor();
-      if (debug) {
+      if (debug || (codeRunning && instructionFrequency <= 10)) {
         ui.highlightLine(assembler.getSourceLine(regPC));
       }
     }
@@ -1894,6 +1967,7 @@ function SimulatorWidget(node) {
       gotoAddr: gotoAddr,
       reset: reset,
       stop: stop,
+      setFrequency: setFrequency,
       toggleMonitor: toggleMonitor,
       updateMonitor: updateMonitor
     };

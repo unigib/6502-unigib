@@ -55,7 +55,8 @@ body {
 }
 
 .buttons input[type="button"],
-.fileControls select {
+.fileControls select,
+.frequencyControl select {
   padding: 7px 12px;
   border: 1px solid #9e1018;
   border-radius: 4px;
@@ -90,15 +91,33 @@ body {
   background: #fff;
 }
 
-.fileControls label {
+.frequencyControl {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid #e1d7d7;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.fileControls label,
+.frequencyControl label {
   color: #6a4548;
   font-weight: bold;
 }
 
-.fileControls select {
+.fileControls select,
+.frequencyControl select {
   min-width: 150px;
   color: #333;
   background: #fff;
+}
+
+.frequencyHelp {
+  color: #605859;
+  font-size: 12px;
 }
 
 .fileControls input[type="button"] {
@@ -547,6 +566,111 @@ body {
   outline-color: #b5121b;
 }
 
+.sevenSegmentPanel {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e1d7d7;
+  border-radius: 8px;
+  background: #282222;
+}
+
+.sevenSegmentPanel h3 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.sevenSegmentPanel h3 span {
+  margin-left: 6px;
+  color: #e3bfc1;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.sevenSegmentDisplay {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #60494a;
+  border-radius: 5px;
+  background: #130f10;
+}
+
+.sevenSegmentDigit {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 0.62;
+  border-radius: 3px;
+  background: #211819;
+}
+
+.segment {
+  position: absolute;
+  border-radius: 3px;
+  background: #482328;
+}
+
+.segment.is-on {
+  background: #ff3447;
+  box-shadow: 0 0 5px rgba(255, 52, 71, 0.8);
+}
+
+.segment-a,
+.segment-g,
+.segment-d {
+  left: 23%;
+  width: 54%;
+  height: 9%;
+}
+
+.segment-a {
+  top: 8%;
+}
+
+.segment-g {
+  top: 45.5%;
+}
+
+.segment-d {
+  bottom: 8%;
+}
+
+.segment-b,
+.segment-c,
+.segment-e,
+.segment-f {
+  width: 10%;
+  height: 30%;
+}
+
+.segment-b,
+.segment-f {
+  top: 14%;
+}
+
+.segment-c,
+.segment-e {
+  bottom: 14%;
+}
+
+.segment-b,
+.segment-c {
+  right: 12%;
+}
+
+.segment-e,
+.segment-f {
+  left: 12%;
+}
+
+.sevenSegmentPanel p {
+  margin: 8px 0 0;
+  color: #ded3d4;
+  font-size: 12px;
+}
+
 .keyHelp {
   margin: 0;
   color: #605859;
@@ -717,6 +841,10 @@ body {
     margin-left: 0;
   }
 
+  .frequencyControl {
+    width: 100%;
+  }
+
   .emulatorPanel {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(180px, 0.8fr);
@@ -725,6 +853,7 @@ body {
 
   .emulatorPanel h2,
   .screenFrame,
+  .sevenSegmentPanel,
   .lastKey {
     grid-column: 1 / -1;
   }
