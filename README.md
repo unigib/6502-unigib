@@ -68,10 +68,10 @@ screen should turn red. `BRK` stops the program.
   Programs start at address `$0600` by default.
 - Use **Samples** and **Load Sample** to put a built-in example in the editor.
   The included samples demonstrate screen colour, keyboard input, labels and
-  loops, and the seven-segment display, including a counter and a byte-value
-  display example. To try the Snake program, select **Open ASM**, choose
+  loops, and the seven-segment display, including a counter, clock, stopwatch,
+  and byte-value display. To try the Snake program, select **Open ASM**, choose
   `samples/snake.asm`, then assemble and run it. Steer Snake with the arrow
-keys or on-screen arrow buttons.
+  keys or on-screen arrow buttons.
 - **Open ASM** opens a local `.asm`, `.s`, `.6502`, or `.txt` file in the
   editor. **Save ASM** downloads the current source as an assembly file.
   Replacing non-empty editor contents asks for confirmation.
@@ -188,17 +188,23 @@ flag values change one instruction at a time.
 | Address range | Purpose |
 | --- | --- |
 | `$0000-$00DF` | Zero page: general-purpose data and pointers. |
-| `$00E0-$00EF` | 16-digit seven-segment display, one hexadecimal digit per address. |
-| `$00F0-$00FD` | Zero page: general-purpose data and pointers. |
+| `$00E0-$00EF` | 16-position seven-segment display: hexadecimal digits, colon separators, or blank positions. |
+| `$00F0-$00F5` | Clock/stopwatch digits: hour tens/ones, minute tens/ones, second tens/ones. |
+| `$00F6` | Clock delay counter; stopwatch running flag. |
+| `$00F7` | Stopwatch delay counter. |
+| `$00F8-$00FD` | Zero page: general-purpose data and pointers. |
 | `$00FE` | A new pseudo-random byte is generated for each instruction. |
 | `$00FF` | The most recently pressed key's code. Printable keys use their character code; arrow keys use the codes below. |
 | `$0100-$01FF` | Stack page used by stack operations and subroutines. |
 | `$0200-$05FF` | 32-by-32 screen: one byte per pixel, stored left-to-right and top-to-bottom. |
 | `$0600` onward | Program code is assembled here by default. |
 
-The seven-segment display shows 16 hexadecimal digits, from left to right.
-Each address from `$00E0` through `$00EF` controls one digit; the low four bits
-of a written byte select the digit (`$0`-`$F`). For example:
+The seven-segment display has 16 positions, from left to right. Each address
+from `$00E0` through `$00EF` controls one display position.
+Values `$00`-`$0F` show hexadecimal digits (`0`-`F`), `$10` shows a colon, and
+`$11` leaves the position blank. For example, `HH:MM:SS` uses digits at
+`$00E0-$00E1`, a colon at `$00E2`, digits at `$00E3-$00E4`, a colon at
+`$00E5`, and digits at `$00E6-$00E7`. To show a hexadecimal digit:
 
 ```asm
 LDA #$0A
@@ -207,12 +213,21 @@ LDA #$05
 STA $00E1 ; show 5 in the next digit
 ```
 
+The clock and stopwatch samples store their `HH:MM:SS` digits at `$00F0-$00F5`
+in that order. The clock uses `$00F6` as its delay counter. The stopwatch uses
+`$00F6` as its running flag and `$00F7` as its delay counter.
+
 The included **Seven-segment display** sample writes `0123456789ABCDEF` to
 the display. **Seven-segment counter** increments the accumulator and shows
 its hexadecimal byte value in the first two digits; choose a low execution
-rate to follow it. **Display byte in A** loads `$A5` into A and displays the
-two hexadecimal nibbles. Change the immediate value in its `LDA` instruction
-to try another byte.
+rate to follow it. **24-hour clock** displays `HH:MM:SS`, and **Stopwatch**
+displays elapsed `HH:MM:SS`; click the simulated screen and press lowercase
+**S** to start, **P** to pause, or **R** to reset it. These samples use a
+software delay intended to approximate one second at the **1 MHz** execution
+rate. Other rates make the clock and stopwatch run faster or slower, and
+browser scheduling makes the timing approximate. **Display byte in A** loads
+`$A5` into A and displays the two hexadecimal nibbles. Change the immediate
+value in its `LDA` instruction to try another byte.
 
 For a screen pixel at column `x` and row `y` (each from 0 to 31), write its
 colour value to `$0200 + (y * 32) + x`. The low four bits select the colour:

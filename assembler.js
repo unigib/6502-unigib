@@ -443,22 +443,38 @@ function SimulatorWidget(node) {
         "adef", "bcdeg", "adefg", "aefg"
       ];
       var digitIndex = addr - 0xe0;
-      var value = (memory.get(addr) || 0) & 0x0f;
-      var activeSegments = patterns[value];
+      var rawValue = memory.get(addr) || 0;
+      var value = rawValue & 0x0f;
+      var isSeparator = rawValue === 0x10;
+      var isBlank = rawValue === 0x11;
+      var activeSegments = isSeparator || isBlank ? "" : patterns[value];
       var segments = ["a", "b", "c", "d", "e", "f", "g"];
       var $digit = $node.find('.sevenSegmentDigit').eq(digitIndex);
+      $digit.toggleClass("is-separator", isSeparator);
+      $digit.toggleClass("is-blank", isBlank);
       for (var i = 0; i < segments.length; i++) {
         $digit.find('.segment-' + segments[i]).toggleClass(
           "is-on", activeSegments.indexOf(segments[i]) !== -1
         );
       }
       var displayText = "";
+      var hasSeparators = false;
       for (var position = 0; position < 16; position++) {
-        displayText += "0123456789ABCDEF"[(memory.get(0xe0 + position) || 0) & 0x0f];
+        rawValue = memory.get(0xe0 + position) || 0;
+        if (rawValue === 0x10) {
+          displayText += ":";
+          hasSeparators = true;
+        } else if (rawValue === 0x11) {
+          displayText += " ";
+        } else {
+          displayText += "0123456789ABCDEF"[rawValue & 0x0f];
+        }
       }
-      $node.find('.sevenSegmentDisplay').attr(
-        'aria-label', '16-digit hexadecimal display: ' + displayText
-      );
+      var $display = $node.find('.sevenSegmentDisplay');
+      $display.toggleClass("hasSeparators", hasSeparators);
+      $display.attr('aria-label', hasSeparators ?
+        'Seven-segment display: ' + displayText :
+        '16-digit hexadecimal display: ' + displayText);
     }
 
     function updatePixel(addr) {

@@ -46,6 +46,8 @@
             <option value="label-loop">Labels and loops</option>
             <option value="seven-segment">Seven-segment display</option>
             <option value="seven-segment-counter">Seven-segment counter</option>
+            <option value="seven-segment-clock">24-hour clock</option>
+            <option value="seven-segment-stopwatch">Stopwatch</option>
             <option value="seven-segment-register">Display byte in A</option>
           </select>
           <input type="button" value="Load Sample" class="loadSampleButton" />
@@ -125,8 +127,11 @@
             </thead>
             <tbody>
               <tr><td><code>$0000-$00DF</code></td><td>224 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
-              <tr><td><code>$00E0-$00EF</code></td><td>16 bytes</td><td>Seven-segment display: one hexadecimal digit per address, from left to right</td></tr>
-              <tr><td><code>$00F0-$00FD</code></td><td>14 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
+              <tr><td><code>$00E0-$00EF</code></td><td>16 bytes</td><td>Seven-segment display positions: hexadecimal digits, colons, or blanks</td></tr>
+              <tr><td><code>$00F0-$00F5</code></td><td>6 bytes</td><td>Clock and stopwatch time digits: hour tens/ones, minute tens/ones, and second tens/ones</td></tr>
+              <tr><td><code>$00F6</code></td><td>1 byte</td><td>Clock delay counter; stopwatch running flag</td></tr>
+              <tr><td><code>$00F7</code></td><td>1 byte</td><td>Stopwatch delay counter</td></tr>
+              <tr><td><code>$00F8-$00FD</code></td><td>6 bytes</td><td>Zero page: general-purpose data and pointers</td></tr>
               <tr><td><code>$00FE</code></td><td>1 byte</td><td>Random value; changes on each instruction</td></tr>
               <tr><td><code>$00FF</code></td><td>1 byte</td><td>Last key pressed (keyboard input)</td></tr>
               <tr><td><code>$0100-$01FF</code></td><td>256 bytes</td><td>Stack page, used by stack instructions and subroutines</td></tr>
@@ -135,8 +140,10 @@
             </tbody>
           </table>
 
+          <p>Clock and stopwatch samples use <code>$00F0-$00F5</code> for the six time digits in <code>HH:MM:SS</code> order. The clock uses <code>$00F6</code> as its delay counter. The stopwatch uses <code>$00F6</code> as its running flag and <code>$00F7</code> as its delay counter.</p>
+
           <h3>Seven-segment display</h3>
-          <p>Addresses <code>$00E0-$00EF</code> control 16 digits from left to right. Writing a byte displays its low four bits as a hexadecimal digit from <code>0</code> to <code>F</code>. For example, <code>LDA #$0A</code> followed by <code>STA $00E0</code> displays <code>A</code> in the leftmost digit. Write multiple digits to show a multi-digit value.</p>
+          <p>Addresses <code>$00E0-$00EF</code> control 16 display positions from left to right. Values <code>$00-$0F</code> show hexadecimal digits <code>0-F</code>, <code>$10</code> shows a colon, and <code>$11</code> leaves a position blank. For example, use <code>HH:MM:SS</code> by writing digits to <code>$00E0-$00E1</code>, a colon to <code>$00E2</code>, digits to <code>$00E3-$00E4</code>, a colon to <code>$00E5</code>, and digits to <code>$00E6-$00E7</code>.</p>
 
           <h3>Screen pixel addresses</h3>
           <p>Pixels are stored left to right, then top to bottom. For a pixel at column <code>x</code> and row <code>y</code> (both 0-31), its address is <code>$0200 + (y &times; 32) + x</code>. The low four bits of the byte select its colour.</p>
@@ -171,9 +178,12 @@ Memory location $ff contains the code of the last key pressed. Printable keys
 use their character code; arrow keys use codes 37 (left), 38 (up), 39 (right),
 and 40 (down).
 
-Memory locations $e0 to $ef control the 16-digit seven-segment display.
-Each address displays the low four bits of the written byte as one hexadecimal
-digit, from left to right.
+Memory locations $e0 to $ef control the 16-position seven-segment display.
+Values $00-$0f show hexadecimal digits; $10 shows a colon; $11 is blank.
+
+The clock and stopwatch samples store HH:MM:SS digits at $f0-$f5 in order.
+The clock uses $f6 as its delay counter. The stopwatch uses $f6 as its running
+flag and $f7 as its delay counter.
 
 Memory locations $200 to $5ff map to the screen pixels. Different values will
 draw different colour pixels. The colours are:

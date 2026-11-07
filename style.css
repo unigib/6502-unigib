@@ -598,12 +598,44 @@ body {
   background: #130f10;
 }
 
+.sevenSegmentDisplay.hasSeparators {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
 .sevenSegmentDigit {
   position: relative;
   width: 100%;
   aspect-ratio: 0.62;
   border-radius: 3px;
   background: #211819;
+}
+
+.sevenSegmentDisplay.hasSeparators .sevenSegmentDigit.is-blank {
+  display: none;
+}
+
+.sevenSegmentDigit.is-separator {
+  background: transparent;
+}
+
+.sevenSegmentDigit.is-separator::before,
+.sevenSegmentDigit.is-separator::after {
+  position: absolute;
+  left: 35%;
+  width: 30%;
+  height: 12%;
+  border-radius: 50%;
+  background: #ff3447;
+  box-shadow: 0 0 5px rgba(255, 52, 71, 0.8);
+  content: "";
+}
+
+.sevenSegmentDigit.is-separator::before {
+  top: 29%;
+}
+
+.sevenSegmentDigit.is-separator::after {
+  bottom: 29%;
 }
 
 .segment {
