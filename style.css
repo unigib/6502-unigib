@@ -1,0 +1,209 @@
+* {
+  box-sizing: border-box;
+}
+
+.widget {
+  width: min(1120px, calc(100% - 32px));
+  margin: 30px auto;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.buttons {
+  margin: 8px 0;
+}
+
+.start, .length {
+  width: 50px;
+}
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 16px;
+}
+
+.codeEditor {
+  position: relative;
+  height: 420px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  background: #111827;
+}
+
+.codeHighlight,
+.code {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.codeHighlight {
+  overflow: hidden;
+  color: #e2e8f0;
+  pointer-events: none;
+}
+
+.codeHighlight code {
+  font: inherit;
+}
+
+.code-line {
+  display: block;
+  min-height: 1.5em;
+}
+
+.code-line-current {
+  background: #334155;
+  box-shadow: 8px 0 #334155, -8px 0 #334155;
+}
+
+.code {
+  z-index: 1;
+  resize: none;
+  overflow: auto;
+  background: transparent;
+  color: transparent;
+  caret-color: #f8fafc;
+  outline: none;
+}
+
+.code::selection {
+  background: rgba(59, 130, 246, 0.4);
+}
+
+.syntax-comment {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.syntax-label {
+  color: #fbbf24;
+}
+
+.syntax-opcode {
+  color: #7dd3fc;
+  font-weight: bold;
+}
+
+.syntax-number {
+  color: #c4b5fd;
+}
+
+.syntax-string {
+  color: #86efac;
+}
+
+.toolsPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.screen {
+  width: 160px;
+  height: 160px;
+  image-rendering: pixelated;
+}
+
+.debugger {
+  width: 100%;
+  min-height: 145px;
+  padding: 8px 4px;
+  border: 1px solid #64748b;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.minidebugger {
+  margin-top: 6px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+}
+
+.monitorControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 14px 0 10px;
+}
+
+.monitorControls input {
+  margin-right: 0.5em;
+}
+
+.monitor,
+.messages {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #999;
+  overflow: auto;
+}
+
+.monitor {
+  height: 100px;
+  margin: 10px 0;
+  background-color: #ddd;
+  display: none;
+}
+
+.messages {
+  height: 100px;
+  background-color: #eee;
+  text-align: left;
+  font-size: 12px;
+  color: #444;
+}
+
+.widget pre {
+  margin: 0;
+  background: inherit;
+}
+
+@media (max-width: 700px) {
+  .widget {
+    width: calc(100% - 24px);
+    margin: 16px auto;
+  }
+
+  .workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .codeEditor {
+    height: 360px;
+  }
+
+  .toolsPanel {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .debugger {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 420px) {
+  .toolsPanel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .screen {
+    align-self: center;
+  }
+}
