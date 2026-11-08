@@ -202,6 +202,7 @@ representations.
 - **Memory Map** opens a reference for the emulator's memory regions, screen
   pixel layout, seven-segment display, palette, and keyboard input codes. See
   the summary below.
+- **Guide** opens this README, formatted as a guide on GitHub, in a new tab.
 - **Notes** shows the emulator's memory map and screen colour values.
 
 ## Assembly syntax
@@ -298,9 +299,11 @@ flag values change one instruction at a time.
 | `$0200-$05FF` | 32-by-32 screen: one byte per pixel, stored left-to-right and top-to-bottom. |
 | `$0600` onward | Program code is assembled here by default. |
 
-The seven-segment display has 16 positions, from left to right. The eight
-addresses `$00E0-$00E7` each control a pair of adjacent positions, showing the
-byte as two hexadecimal digits. For example:
+### Seven-segment display
+
+The display has 16 positions, from left to right. The eight addresses
+`$00E0-$00E7` each control a pair of adjacent positions, showing the byte as
+two hexadecimal digits. For example:
 
 ```asm
 LDA #$FF
@@ -309,49 +312,87 @@ LDA #$0F
 STA $00E1 ; show 0F in the next two positions
 ```
 
+### Samples
+
+#### Keyboard to LED display
+
+The **Keyboard to LED display** sample writes each key's code as a hexadecimal
+byte. It advances through the eight display addresses and wraps to the
+beginning; press **Enter** to clear the display.
+
+#### Calculators
+
 The **Binary calculator**, **Decimal calculator**, and **Hexadecimal
-calculator** samples are interactive 8-bit calculators. Click the emulated
-screen to focus keyboard input, then enter digits in the selected base, an
-operator, a second value, and `=`. They support
-addition, subtraction, multiplication, and integer division. Results wrap
-modulo 256; division by zero displays zero. Hexadecimal digits `A-F` may be
-entered in either case. Press `C` or **Enter** to clear.
+calculator** are interactive 8-bit calculators. Click the emulated screen to
+focus keyboard input, then enter digits in the selected base, an operator, a
+second value, and `=`. They support addition, subtraction, multiplication,
+and integer division. Results wrap modulo 256; division by zero displays zero.
+Hexadecimal digits `A-F` may be entered in either case. Press `C` or **Enter**
+to clear.
 
-The clock and stopwatch samples store the `HHMMSS` digits at `$00F0-$00F5`
-in that order, then pack each digit pair into the display bytes at
-`$00E0-$00E2`. The clock uses `$00F6` as its delay counter. The stopwatch
-uses `$00F6` as its running flag and `$00F7` as its delay counter.
+#### Seven-segment display sample
 
-The included **Seven-segment display** sample writes `0123456789ABCDEF` to
-the display. **Seven-segment counter** increments the accumulator and shows
-its hexadecimal byte value in the first two digits; choose a low execution
-rate to follow it. **Count up/down with LED** uses **+** or **Up Arrow** to
-increment and **-** or **Down Arrow** to decrement, displaying the count as a
-hexadecimal byte in the last two positions. It wraps between `$00` and `$FF`.
-**Automatic LED counter** starts counting up with **Up Arrow**, counts down
-toward zero with **Down Arrow**, and stops at zero. The count uses all eight
-display bytes (16 digits), so it carries into the next byte. Press **Left
-Arrow** to reset to zero and stop. **Automatic BCD counter** uses the same
-controls but stores packed decimal digits, carrying from `09` to `10` and
-`99` to `0100`; compare it with the hexadecimal counter, which carries from
-`09` to `0A` and `FF` to `0100`. **Automatic binary counter** uses the same
-controls to show a 16-bit binary value using only `0` and `1` digits, from
-`0000000000000000` through `1111111111111111`.
-In all three samples, change the `LDA #$01` delay value in `waitCount` to adjust
-the counting speed: a larger value counts more slowly, and a smaller value
-counts faster. Select a low execution rate if the counter runs too quickly.
-**Display byte in A** demonstrates writing a full byte to
-`$00E0`. **24-hour clock** displays `HHMMSS`, and **Stopwatch** displays
-elapsed `HHMMSS`; click the simulated screen and press lowercase **S** to
-start, **P** to pause, or **R** to reset it. These samples use a
-software delay intended to approximate one second at the **1 MHz** execution
-rate. Other rates make the clock and stopwatch run faster or slower, and
-browser scheduling makes the timing approximate. **Display byte in A** loads
-`$A5` into A and displays the two hexadecimal nibbles. Change the immediate
-value in its `LDA` instruction to try another byte.
+The **Seven-segment display** sample writes `0123456789ABCDEF` to the display.
 
-For a screen pixel at column `x` and row `y` (each from 0 to 31), write its
-colour value to `$0200 + (y * 32) + x`. The low four bits select the colour:
+#### Seven-segment counter
+
+The **Seven-segment counter** continuously increments the accumulator and
+shows its hexadecimal byte value in the first two digits. Choose a low
+execution rate to follow it.
+
+#### Count up/down with LED
+
+The **Count up/down with LED** sample uses **+** or **Up Arrow** to increment
+and **-** or **Down Arrow** to decrement, displaying a hexadecimal byte in the
+last two positions. It wraps between `$00` and `$FF`.
+
+#### Automatic LED counter
+
+The **Automatic LED counter** starts counting up with **Up Arrow** and counts
+down toward zero with **Down Arrow**, stopping at zero. It uses all eight
+display bytes (16 hexadecimal digits), carrying into the next byte. Press
+**Left Arrow** to reset to zero and stop.
+
+#### Automatic BCD counter
+
+The **Automatic BCD counter** uses the same controls but stores packed decimal
+digits, carrying from `09` to `10` and `99` to `0100`. Compare this with the
+hexadecimal counter, which carries from `09` to `0A` and `FF` to `0100`.
+
+#### Automatic binary counter
+
+The **Automatic binary counter** uses the same controls to show a 16-bit
+binary value using only `0` and `1` digits, from `0000000000000000` through
+`1111111111111111`.
+
+For all three automatic counters, change the `LDA #$01` delay value in
+`waitCount` to adjust the speed: a larger value counts more slowly, and a
+smaller value counts faster. Select a low execution rate if a counter runs too
+quickly.
+
+#### Clock and stopwatch
+
+The **24-hour clock** displays `HHMMSS`; the **Stopwatch** displays elapsed
+`HHMMSS`. Click the simulated screen and press lowercase **S** to start, **P**
+to pause, or **R** to reset the stopwatch. The clock and stopwatch store the
+digits at `$00F0-$00F5` and pack each pair into display bytes `$00E0-$00E2`.
+The clock uses `$00F6` as its delay counter. The stopwatch uses `$00F6` as its
+running flag and `$00F7` as its delay counter. Their software delays are
+intended to approximate one second at the **1 MHz** execution rate; timing
+varies with execution rate and browser scheduling.
+
+#### Display byte in A
+
+The **Display byte in A** sample loads `$A5` into A and displays its two
+hexadecimal nibbles. Change the immediate value in its `LDA` instruction to
+try another byte.
+
+## Screen
+
+The simulated screen is 32 by 32 pixels. Each pixel occupies one byte in the
+range `$0200-$05FF`, stored left-to-right and then top-to-bottom. For a pixel
+at column `x` and row `y` (each from 0 to 31), write its colour value to
+`$0200 + (y * 32) + x`. The low four bits select the colour:
 
 | Value | Colour | Value | Colour |
 | --- | --- | --- | --- |

@@ -55,6 +55,7 @@ body {
 }
 
 .buttons input[type="button"],
+.buttons .guideButton,
 .fileControls select,
 .frequencyControl select {
   padding: 7px 12px;
@@ -63,14 +64,26 @@ body {
   font: inherit;
 }
 
-.buttons input[type="button"] {
+.buttons input[type="button"],
+.buttons .guideButton {
   color: #fff;
   background: #b5121b;
   cursor: pointer;
 }
 
-.buttons input[type="button"]:hover:not(:disabled) {
+.buttons input[type="button"]:hover:not(:disabled),
+.buttons .guideButton:hover {
   background: #8f0d15;
+}
+
+.buttons .guideButton {
+  color: #fff;
+  text-decoration: none;
+}
+
+.buttons .guideButton:focus-visible {
+  outline: 2px solid #222;
+  outline-offset: 2px;
 }
 
 .buttons input[type="button"]:disabled {
