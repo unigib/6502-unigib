@@ -62,6 +62,98 @@ BRK
 Select **Assemble**, then **Run**. The first pixel of the simulated 32-by-32
 screen should turn red. `BRK` stops the program.
 
+## A short guided tutorial
+
+These short exercises build on one another using the editor and emulator. For
+each exercise, replace the editor contents with the code, select **Assemble**,
+then select **Run**. Use **Reset** before assembling another exercise. When a
+program ends with `BRK`, inspect the CPU registers or use **Monitor** to check
+the memory address named in the instructions.
+
+### 1. Load and store a value
+
+```asm
+LDA #$2A
+STA $00D0
+BRK
+```
+
+`LDA` loads the value `$2A` into the accumulator (**A**). The `#` means the
+operand is the value itself. `STA` writes A to memory address `$00D0`.
+After running, A and memory `$00D0` should both contain `$2A`. Without `#`,
+`LDA $00D0` would load the value stored at that address instead.
+
+### 2. Add values
+
+```asm
+LDA #$05
+CLC
+ADC #$03
+STA $00D0
+BRK
+```
+
+`CLC` clears the carry flag before `ADC` adds `$03` to A. The result, `$08`,
+is stored at `$00D0`. Try changing the two values and check the result in
+**Monitor**. Values are bytes, so results cannot exceed `$FF` without wrapping;
+the carry flag can indicate that an addition overflowed.
+
+### 3. Repeat instructions to draw a line
+
+```asm
+LDX #$00
+LDA #$02
+paintRow:
+STA $0200,X
+INX
+CPX #$20
+BNE paintRow
+BRK
+```
+
+The screen begins at `$0200`; the first 32 addresses are its top row.
+`STA $0200,X` writes the red colour value (`$02`) at the address `$0200 + X`.
+`INX` advances to the next pixel. `CPX` compares X with `$20`, and `BNE`
+branches back to `paintRow` while they differ. Once the loop finishes, the
+top row is red. Change the colour value or use a different starting address
+to experiment.
+
+### 4. Show a byte on the LED display
+
+```asm
+LDA #$2A
+STA $00E7
+BRK
+```
+
+Each display address controls two hexadecimal digits. `$00E7` is the
+rightmost pair, so this shows `2A`. The byte is shown in hexadecimal; decimal
+42 is `$2A`, not the BCD value `$42`. Try `$42` to compare how a byte and its
+packed BCD representation look.
+
+### 5. Read a key
+
+```asm
+waitKey:
+LDA $00FF
+BEQ waitKey
+STA $00E7
+LDA #$00
+STA $00FF
+JMP waitKey
+```
+
+`$00FF` contains the most recent key code. This program waits while it is zero,
+then displays the code in the rightmost LED pair and clears the key location
+before waiting again. Assemble and run it, click the emulated screen, and press
+a key. The program intentionally loops rather than ending with `BRK`; select
+**Stop** to halt it.
+
+Try extending these exercises: draw a different shape, show the key code in
+more than one display pair, or use the **Automatic LED counter**, **Automatic
+BCD counter**, and **Automatic binary counter** samples to compare number
+representations.
+
 ## Basic controls
 
 - **Assemble** checks the source and loads the program into simulated memory.
