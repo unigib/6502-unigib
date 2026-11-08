@@ -39,8 +39,8 @@ define movingLeft    8
 ; ASCII values of keys controlling the snake
 define ASCII_w      $26
 define ASCII_a      $25
-define ASCII_s      $27
-define ASCII_d      $28
+define ASCII_s      $28
+define ASCII_d      $27
 
 ; System variables
 define sysRandom    $fe ; random byte address
@@ -341,13 +341,16 @@ drawSnake:
 
 
 spinWheels:
-  ldx #99
-spinloop:
-  nop
-  nop
+  ldx #$ff
+spinOuter:
+  ldy #$ff
+spinInner:
+  dey
+  bne spinInner
   dex
-  bne spinloop
+  bne spinOuter
   rts
 
 
 gameOver:
+  brk

@@ -31,29 +31,20 @@ var ASSEMBLY_SAMPLES = {
       "LDA digits,X\n" +
       "STA $00E0,X\n" +
       "INX\n" +
-      "CPX #$10\n" +
+      "CPX #$08\n" +
       "BNE loop\n" +
       "BRK\n" +
       "digits:\n" +
-      "DCB $0,$1,$2,$3,$4,$5,$6,$7,$8,$9,$a,$b,$c,$d,$e,$f"
+      "DCB $01,$23,$45,$67,$89,$ab,$cd,$ef"
   },
   "seven-segment-counter": {
     filename: "seven-segment-counter.asm",
-    code: "; Count up in the accumulator and display its byte as two hex digits\n" +
+    code: "; Count up in the accumulator and display the byte as two hex digits\n" +
       "LDA #$00\n" +
       "counter:\n" +
       "CLC\n" +
       "ADC #$01\n" +
-      "TAX\n" +
-      "AND #$F0\n" +
-      "LSR\n" +
-      "LSR\n" +
-      "LSR\n" +
-      "LSR\n" +
       "STA $00E0\n" +
-      "TXA\n" +
-      "AND #$0F\n" +
-      "STA $00E1\n" +
       "JMP counter"
   },
   "seven-segment-clock": {
@@ -74,18 +65,6 @@ var ASSEMBLY_SAMPLES = {
       "STA minuteOnes\n" +
       "STA secondTens\n" +
       "STA secondOnes\n" +
-      "LDA #$10\n" +
-      "STA $00E2\n" +
-      "STA $00E5\n" +
-      "LDA #$11\n" +
-      "STA $00E8\n" +
-      "STA $00E9\n" +
-      "STA $00EA\n" +
-      "STA $00EB\n" +
-      "STA $00EC\n" +
-      "STA $00ED\n" +
-      "STA $00EE\n" +
-      "STA $00EF\n" +
       "JSR drawTime\n" +
       "clock:\n" +
       "JSR waitSecond\n" +
@@ -134,17 +113,26 @@ var ASSEMBLY_SAMPLES = {
       "JMP clock\n" +
       "drawTime:\n" +
       "LDA hourTens\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA hourOnes\n" +
       "STA $00E0\n" +
-      "LDA hourOnes\n" +
-      "STA $00E1\n" +
       "LDA minuteTens\n" +
-      "STA $00E3\n" +
-      "LDA minuteOnes\n" +
-      "STA $00E4\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA minuteOnes\n" +
+      "STA $00E1\n" +
       "LDA secondTens\n" +
-      "STA $00E6\n" +
-      "LDA secondOnes\n" +
-      "STA $00E7\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA secondOnes\n" +
+      "STA $00E2\n" +
       "RTS\n" +
       "waitSecond:\n" +
       "LDA #$08\n" +
@@ -183,18 +171,6 @@ var ASSEMBLY_SAMPLES = {
       "STA secondTens\n" +
       "STA secondOnes\n" +
       "STA running\n" +
-      "LDA #$10\n" +
-      "STA $00E2\n" +
-      "STA $00E5\n" +
-      "LDA #$11\n" +
-      "STA $00E8\n" +
-      "STA $00E9\n" +
-      "STA $00EA\n" +
-      "STA $00EB\n" +
-      "STA $00EC\n" +
-      "STA $00ED\n" +
-      "STA $00EE\n" +
-      "STA $00EF\n" +
       "LDA #$00\n" +
       "JSR drawTime\n" +
       "main:\n" +
@@ -281,17 +257,26 @@ var ASSEMBLY_SAMPLES = {
       "RTS\n" +
       "drawTime:\n" +
       "LDA hourTens\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA hourOnes\n" +
       "STA $00E0\n" +
-      "LDA hourOnes\n" +
-      "STA $00E1\n" +
       "LDA minuteTens\n" +
-      "STA $00E3\n" +
-      "LDA minuteOnes\n" +
-      "STA $00E4\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA minuteOnes\n" +
+      "STA $00E1\n" +
       "LDA secondTens\n" +
-      "STA $00E6\n" +
-      "LDA secondOnes\n" +
-      "STA $00E7\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ASL\n" +
+      "ORA secondOnes\n" +
+      "STA $00E2\n" +
       "RTS\n" +
       "waitSecond:\n" +
       "LDA #$08\n" +
@@ -311,19 +296,10 @@ var ASSEMBLY_SAMPLES = {
   },
   "seven-segment-register": {
     filename: "seven-segment-register.asm",
-    code: "; Display the byte loaded into A as two hexadecimal digits\n" +
+    code: "; Display a byte as two hexadecimal digits\n" +
       "; Change #$A5 to another byte value to experiment\n" +
       "LDA #$A5\n" +
-      "TAX\n" +
-      "AND #$F0\n" +
-      "LSR\n" +
-      "LSR\n" +
-      "LSR\n" +
-      "LSR\n" +
       "STA $00E0\n" +
-      "TXA\n" +
-      "AND #$0F\n" +
-      "STA $00E1\n" +
       "BRK"
   }
 };

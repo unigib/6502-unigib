@@ -188,7 +188,8 @@ flag values change one instruction at a time.
 | Address range | Purpose |
 | --- | --- |
 | `$0000-$00DF` | Zero page: general-purpose data and pointers. |
-| `$00E0-$00EF` | 16-position seven-segment display: hexadecimal digits, colon separators, or blank positions. |
+| `$00E0-$00E7` | 16-position seven-segment display: one byte per two adjacent hexadecimal digits. |
+| `$00E8-$00EF` | Zero page: general-purpose data and pointers. |
 | `$00F0-$00F5` | Clock/stopwatch digits: hour tens/ones, minute tens/ones, second tens/ones. |
 | `$00F6` | Clock delay counter; stopwatch running flag. |
 | `$00F7` | Stopwatch delay counter. |
@@ -199,30 +200,29 @@ flag values change one instruction at a time.
 | `$0200-$05FF` | 32-by-32 screen: one byte per pixel, stored left-to-right and top-to-bottom. |
 | `$0600` onward | Program code is assembled here by default. |
 
-The seven-segment display has 16 positions, from left to right. Each address
-from `$00E0` through `$00EF` controls one display position.
-Values `$00`-`$0F` show hexadecimal digits (`0`-`F`), `$10` shows a colon, and
-`$11` leaves the position blank. For example, `HH:MM:SS` uses digits at
-`$00E0-$00E1`, a colon at `$00E2`, digits at `$00E3-$00E4`, a colon at
-`$00E5`, and digits at `$00E6-$00E7`. To show a hexadecimal digit:
+The seven-segment display has 16 positions, from left to right. The eight
+addresses `$00E0-$00E7` each control a pair of adjacent positions, showing the
+byte as two hexadecimal digits. For example:
 
 ```asm
-LDA #$0A
-STA $00E0 ; show A in the leftmost digit
-LDA #$05
-STA $00E1 ; show 5 in the next digit
+LDA #$FF
+STA $00E0 ; show FF in the first two positions
+LDA #$0F
+STA $00E1 ; show 0F in the next two positions
 ```
 
-The clock and stopwatch samples store their `HH:MM:SS` digits at `$00F0-$00F5`
-in that order. The clock uses `$00F6` as its delay counter. The stopwatch uses
-`$00F6` as its running flag and `$00F7` as its delay counter.
+The clock and stopwatch samples store the `HHMMSS` digits at `$00F0-$00F5`
+in that order, then pack each digit pair into the display bytes at
+`$00E0-$00E2`. The clock uses `$00F6` as its delay counter. The stopwatch
+uses `$00F6` as its running flag and `$00F7` as its delay counter.
 
 The included **Seven-segment display** sample writes `0123456789ABCDEF` to
 the display. **Seven-segment counter** increments the accumulator and shows
 its hexadecimal byte value in the first two digits; choose a low execution
-rate to follow it. **24-hour clock** displays `HH:MM:SS`, and **Stopwatch**
-displays elapsed `HH:MM:SS`; click the simulated screen and press lowercase
-**S** to start, **P** to pause, or **R** to reset it. These samples use a
+rate to follow it. **Display byte in A** demonstrates writing a full byte to
+`$00E0`. **24-hour clock** displays `HHMMSS`, and **Stopwatch** displays
+elapsed `HHMMSS`; click the simulated screen and press lowercase **S** to
+start, **P** to pause, or **R** to reset it. These samples use a
 software delay intended to approximate one second at the **1 MHz** execution
 rate. Other rates make the clock and stopwatch run faster or slower, and
 browser scheduling makes the timing approximate. **Display byte in A** loads

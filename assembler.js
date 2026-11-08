@@ -391,6 +391,7 @@ function SimulatorWidget(node) {
 
   function Display() {
     var displayArray = [];
+    var sevenSegmentValues = [];
     var palette = [
       "#000000", "#ffffff", "#880000", "#aaffee",
       "#cc44cc", "#00cc55", "#0000aa", "#eeee77",
@@ -430,51 +431,40 @@ function SimulatorWidget(node) {
         html += '</span>';
       }
       $node.find('.sevenSegmentDisplay').html(html);
-      for (var digit = 0; digit < 16; digit++) {
-        updateSevenSegment(0xe0 + digit);
+      for (var byte = 0; byte < 8; byte++) {
+        updateSevenSegmentByte(0xe0 + byte);
       }
     }
 
-    function updateSevenSegment(addr) {
+    function updateSevenSegmentByte(addr) {
+      var value = memory.get(addr) || 0;
+      var digitIndex = (addr - 0xe0) * 2;
+      renderSevenSegmentDigit(digitIndex, (value >> 4) & 0x0f);
+      renderSevenSegmentDigit(digitIndex + 1, value & 0x0f);
+    }
+
+    function renderSevenSegmentDigit(digitIndex, value) {
       var patterns = [
         "abcdef", "bc", "abdeg", "abcdg",
         "bcfg", "acdfg", "acdefg", "abc",
         "abcdefg", "abcdfg", "abcefg", "cdefg",
         "adef", "bcdeg", "adefg", "aefg"
       ];
-      var digitIndex = addr - 0xe0;
-      var rawValue = memory.get(addr) || 0;
-      var value = rawValue & 0x0f;
-      var isSeparator = rawValue === 0x10;
-      var isBlank = rawValue === 0x11;
-      var activeSegments = isSeparator || isBlank ? "" : patterns[value];
+      var activeSegments = patterns[value];
       var segments = ["a", "b", "c", "d", "e", "f", "g"];
       var $digit = $node.find('.sevenSegmentDigit').eq(digitIndex);
-      $digit.toggleClass("is-separator", isSeparator);
-      $digit.toggleClass("is-blank", isBlank);
+      sevenSegmentValues[digitIndex] = value;
       for (var i = 0; i < segments.length; i++) {
         $digit.find('.segment-' + segments[i]).toggleClass(
           "is-on", activeSegments.indexOf(segments[i]) !== -1
         );
       }
       var displayText = "";
-      var hasSeparators = false;
       for (var position = 0; position < 16; position++) {
-        rawValue = memory.get(0xe0 + position) || 0;
-        if (rawValue === 0x10) {
-          displayText += ":";
-          hasSeparators = true;
-        } else if (rawValue === 0x11) {
-          displayText += " ";
-        } else {
-          displayText += "0123456789ABCDEF"[rawValue & 0x0f];
-        }
+        displayText += "0123456789ABCDEF"[sevenSegmentValues[position] || 0];
       }
       var $display = $node.find('.sevenSegmentDisplay');
-      $display.toggleClass("hasSeparators", hasSeparators);
-      $display.attr('aria-label', hasSeparators ?
-        'Seven-segment display: ' + displayText :
-        '16-digit hexadecimal display: ' + displayText);
+      $display.attr('aria-label', '16-digit hexadecimal display: ' + displayText);
     }
 
     function updatePixel(addr) {
@@ -488,7 +478,7 @@ function SimulatorWidget(node) {
       initialize: initialize,
       reset: reset,
       updatePixel: updatePixel,
-      updateSevenSegment: updateSevenSegment
+      updateSevenSegmentByte: updateSevenSegmentByte
     };
   }
 
@@ -497,8 +487,8 @@ function SimulatorWidget(node) {
 
     function set(addr, val) {
       memArray[addr] = val;
-      if ((addr >= 0xe0) && (addr <= 0xef)) {
-        display.updateSevenSegment(addr);
+      if ((addr >= 0xe0) && (addr <= 0xe7)) {
+        display.updateSevenSegmentByte(addr);
       }
       return memArray[addr];
     }
