@@ -44,9 +44,17 @@
             <option value="">Choose a sample...</option>
             <option value="screen-colour">Screen colour</option>
             <option value="keyboard-input">Keyboard input</option>
+            <option value="keyboard-led-display">Keyboard to LED display</option>
             <option value="label-loop">Labels and loops</option>
             <option value="seven-segment">Seven-segment display</option>
             <option value="seven-segment-counter">Seven-segment counter</option>
+            <option value="seven-segment-count-up-down">Count up/down with LED</option>
+            <option value="seven-segment-auto-counter">Automatic LED counter</option>
+            <option value="seven-segment-auto-counter-bcd">Automatic BCD counter</option>
+            <option value="seven-segment-auto-counter-binary">Automatic binary counter</option>
+            <option value="calculator-binary">Binary calculator</option>
+            <option value="calculator-decimal">Decimal calculator</option>
+            <option value="calculator-hexadecimal">Hexadecimal calculator</option>
             <option value="seven-segment-clock">24-hour clock</option>
             <option value="seven-segment-stopwatch">Stopwatch</option>
             <option value="seven-segment-register">Display byte in A</option>
@@ -79,17 +87,17 @@
           </section>
         </section>
 
-        <section class="emulatorPanel" aria-label="Emulated screen and controls">
-          <h2>Emulator</h2>
+        <section class="emulatorPanel" aria-label="Screen and controls">
+          <h2>Screen <span>$0200-$05FF</span></h2>
           <div class="screenFrame">
-            <canvas class="screen" width="320" height="320" tabindex="0" aria-label="Emulated 6502 screen. Focus here to send keyboard input."></canvas>
+            <canvas class="screen" width="320" height="320" tabindex="0" aria-label="Emulated 32 by 32 screen mapped to memory addresses $0200 through $05FF. Focus here to send keyboard input."></canvas>
           </div>
-          <section class="sevenSegmentPanel" aria-label="Memory-mapped hexadecimal display">
-            <h3>Seven-segment display <span>$00E0-$00E7</span></h3>
+          <section class="sevenSegmentPanel calculatorDisplayPanel" aria-label="Calculator-style seven-segment display">
+            <h3>Calculator display <span>$00E0-$00E7</span></h3>
             <div class="sevenSegmentDisplay" role="img" aria-label="16-digit hexadecimal display: 0000000000000000"></div>
-            <p>Each byte controls two adjacent digits: <code>$FF</code> displays <code>FF</code> and <code>$0F</code> displays <code>0F</code>.</p>
+            <p>Each byte controls two adjacent digits. Try the binary, decimal, or hexadecimal calculator samples.</p>
           </section>
-          <p class="keyHelp">Click the screen, then use the arrow keys or WASD.</p>
+          <p class="keyHelp">Click the screen to send keyboard input; Snake also uses the arrow keys or WASD.</p>
           <div class="directionPad" aria-label="Directional controls">
             <button type="button" class="directionKey directionUp" data-key-code="38" aria-label="Up">↑</button>
             <button type="button" class="directionKey directionLeft" data-key-code="37" aria-label="Left">←</button>

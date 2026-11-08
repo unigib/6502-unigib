@@ -69,7 +69,13 @@ screen should turn red. `BRK` stops the program.
 - Use **Samples** and **Load Sample** to put a built-in example in the editor.
   The included samples demonstrate screen colour, keyboard input, labels and
   loops, and the seven-segment display, including a counter, clock, stopwatch,
-  and byte-value display. To try the Snake program, select **Open ASM**, choose
+  byte-value display, keyboard-to-LED display, and binary, decimal, and
+  hexadecimal calculators. The calculator samples accept digits and `+`, `-`,
+  `*`, `/`, `=` from the keyboard; press **C** or **Enter** to clear. In
+  **Keyboard to LED display**, each key's code appears as a hexadecimal byte;
+  the display wraps after eight keys, and **Enter** clears it. To try the Snake
+  program, select
+  **Open ASM**, choose
   `samples/snake.asm`, then assemble and run it. Steer Snake with the arrow
   keys or on-screen arrow buttons.
 - **Open ASM** opens a local `.asm`, `.s`, `.6502`, or `.txt` file in the
@@ -211,6 +217,14 @@ LDA #$0F
 STA $00E1 ; show 0F in the next two positions
 ```
 
+The **Binary calculator**, **Decimal calculator**, and **Hexadecimal
+calculator** samples are interactive 8-bit calculators. Click the emulated
+screen to focus keyboard input, then enter digits in the selected base, an
+operator, a second value, and `=`. They support
+addition, subtraction, multiplication, and integer division. Results wrap
+modulo 256; division by zero displays zero. Hexadecimal digits `A-F` may be
+entered in either case. Press `C` or **Enter** to clear.
+
 The clock and stopwatch samples store the `HHMMSS` digits at `$00F0-$00F5`
 in that order, then pack each digit pair into the display bytes at
 `$00E0-$00E2`. The clock uses `$00F6` as its delay counter. The stopwatch
@@ -219,7 +233,22 @@ uses `$00F6` as its running flag and `$00F7` as its delay counter.
 The included **Seven-segment display** sample writes `0123456789ABCDEF` to
 the display. **Seven-segment counter** increments the accumulator and shows
 its hexadecimal byte value in the first two digits; choose a low execution
-rate to follow it. **Display byte in A** demonstrates writing a full byte to
+rate to follow it. **Count up/down with LED** uses **+** or **Up Arrow** to
+increment and **-** or **Down Arrow** to decrement, displaying the count as a
+hexadecimal byte in the last two positions. It wraps between `$00` and `$FF`.
+**Automatic LED counter** starts counting up with **Up Arrow**, counts down
+toward zero with **Down Arrow**, and stops at zero. The count uses all eight
+display bytes (16 digits), so it carries into the next byte. Press **Left
+Arrow** to reset to zero and stop. **Automatic BCD counter** uses the same
+controls but stores packed decimal digits, carrying from `09` to `10` and
+`99` to `0100`; compare it with the hexadecimal counter, which carries from
+`09` to `0A` and `FF` to `0100`. **Automatic binary counter** uses the same
+controls to show a 16-bit binary value using only `0` and `1` digits, from
+`0000000000000000` through `1111111111111111`.
+In all three samples, change the `LDA #$01` delay value in `waitCount` to adjust
+the counting speed: a larger value counts more slowly, and a smaller value
+counts faster. Select a low execution rate if the counter runs too quickly.
+**Display byte in A** demonstrates writing a full byte to
 `$00E0`. **24-hour clock** displays `HHMMSS`, and **Stopwatch** displays
 elapsed `HHMMSS`; click the simulated screen and press lowercase **S** to
 start, **P** to pause, or **R** to reset it. These samples use a

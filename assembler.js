@@ -525,9 +525,9 @@ function SimulatorWidget(node) {
       for (var x = 0; x < length; x++) {
         if ((x & 15) === 0) {
           if (x > 0) { html += "\n"; }
-          n = (start + x);
-          html += num2hex(((n >> 8) & 0xff));
-          html += num2hex((n & 0xff));
+          n = start + x;
+          html += num2hex((n >> 8) & 0xff);
+          html += num2hex(n & 0xff);
           html += ": ";
         }
         html += num2hex(memory.get(start + x));
@@ -536,13 +536,30 @@ function SimulatorWidget(node) {
       return html;
     }
 
+    function formatHexdump(start, length) {
+      var html = '<table class="memoryMapTable hexdumpTable">' +
+        '<thead><tr><th>Address</th><th>Bytes</th></tr></thead><tbody>';
+
+      for (var row = 0; row < length; row += 16) {
+        var address = start + row;
+        var bytes = '';
+        for (var column = 0; column < 16 && row + column < length; column++) {
+          bytes += num2hex(memory.get(address + column)) + ' ';
+        }
+        html += '<tr><td><code>$' + addr2hex(address) + '</code></td>' +
+          '<td><code>' + bytes + '</code></td></tr>';
+      }
+      return html + '</tbody></table>';
+    }
+
     return {
       set: set,
       get: get,
       getWord: getWord,
       storeByte: storeByte,
       storeKeypress: storeKeypress,
-      format: format
+      format: format,
+      formatHexdump: formatHexdump
     };
   }
 
@@ -2691,24 +2708,31 @@ function SimulatorWidget(node) {
       pushByte((value >> 8) & 0xff);
     }
 
-    function openPopup(content, title) {
-      var w = window.open('', title, 'width=500,height=300,resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no');
-
-      var html = "<html><head>";
+    function openPopup(content, title, contentIsHtml) {
+      var w = window.open('', title, 'width=900,height=560,resizable=yes,scrollbars=yes,toolbar=no,location=no,menubar=no,status=no');
+      var contentMarkup = contentIsHtml ? content :
+        "<pre class='popupOutput'><code>" + escapePopupContent(content) + "</code></pre>";
+      var description = title === 'Hexdump' ?
+        'Program bytes grouped by memory address' : 'Disassembled program instructions';
+      var html = "<!doctype html><html><head><meta charset='utf-8' />";
+      html += "<meta name='viewport' content='width=device-width, initial-scale=1' />";
       html += "<link href='style.css' rel='stylesheet' type='text/css' />";
       html += "<title>" + title + "</title></head><body>";
-      html += "<pre><code>";
-
-      html += content;
-
-      html += "</code></pre></body></html>";
+      html += "<main class='dataWindow'><header class='memoryMapHeader'><div>";
+      html += "<h2>" + title + "</h2><p>" + description + "</p></div></header>";
+      html += "<section class='memoryMapContent'>" + contentMarkup + "</section></main>";
+      html += "</body></html>";
       w.document.write(html);
       w.document.close();
     }
 
+    function escapePopupContent(content) {
+      return content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     // hexDump() - Dump binary as hex to new window
     function hexdump() {
-      openPopup(memory.format(0x600, codeLen), 'Hexdump');
+      openPopup(memory.formatHexdump(0x600, codeLen), 'Hexdump', true);
     }
 
     // TODO: Create separate disassembler object?

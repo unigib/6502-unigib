@@ -147,6 +147,35 @@ body {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
 }
 
+.dataWindow {
+  width: min(860px, calc(100% - 32px));
+  margin: 24px auto;
+  overflow: hidden;
+  border: 1px solid #d5c6c7;
+  border-top: 5px solid #b5121b;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+.dataWindow .memoryMapContent {
+  max-height: calc(100vh - 110px);
+}
+
+.hexdumpTable td:last-child {
+  width: 100%;
+}
+
+.hexdumpTable td code {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.popupOutput {
+  margin: 0;
+  overflow: auto;
+  font: 13px/1.6 Consolas, "Courier New", monospace;
+}
+
 .memoryMapDialog::backdrop {
   background: rgba(26, 20, 20, 0.58);
 }
@@ -547,6 +576,14 @@ body {
   align-self: flex-start;
 }
 
+.emulatorPanel h2 span {
+  margin-left: 6px;
+  color: #777;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  font-weight: normal;
+}
+
 .screenFrame {
   width: min(100%, 360px);
   aspect-ratio: 1;
@@ -571,6 +608,11 @@ body {
   padding: 12px;
   border: 1px solid #e1d7d7;
   border-radius: 8px;
+  background: #282222;
+}
+
+.calculatorDisplayPanel {
+  border-color: #1d1718;
   background: #282222;
 }
 
