@@ -313,6 +313,61 @@ body {
   min-width: 0;
 }
 
+.sourceToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #6a4548;
+  font-weight: bold;
+}
+
+.sourceToolbar select,
+.sourceToolbar input[type="button"] {
+  padding: 7px 10px;
+  border: 1px solid #9e1018;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.sourceToolbar select {
+  color: #333;
+  background: #fff;
+}
+
+.sourceToolbar input[type="button"] {
+  color: #fff;
+  background: #b5121b;
+  cursor: pointer;
+}
+
+.sourceToolbar input[type="button"]:disabled {
+  border-color: #b8a5a6;
+  background: #c9babc;
+  cursor: default;
+}
+
+.sourceHelp {
+  color: #605859;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.executionPipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin: -8px 0 0;
+  padding: 0 0 0 22px;
+  color: #6a4548;
+  font-size: 13px;
+}
+
+.executionPipeline li::marker {
+  color: #b5121b;
+  font-weight: bold;
+}
+
 .codeEditor {
   position: relative;
   height: 520px;

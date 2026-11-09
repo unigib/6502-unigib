@@ -22,6 +22,7 @@ quick experimentation with 6502 machine code.
 
 - `index.html` — the browser UI and embedded editor.
 - `assembler.js` — assembler, emulator core, and UI logic.
+- `c-compiler.js` — compiler for the small, browser-based C teaching subset.
 - `samples.js` — bundled sample programs.
 - `samples/` — example assembly files, including the Snake game.
 - `style.css` — styling for the classroom-themed interface.
@@ -34,14 +35,16 @@ quick experimentation with 6502 machine code.
    experience:
 
    ```bash
-   cd 6502js
+   cd 6502-unigib
    python -m http.server 8000
    ```
 
    Then open <http://localhost:8000/> in a modern browser.
 3. You can also open `index.html` directly in a browser, though a local web
    server is recommended for smoother behaviour and compatibility.
-4. Enter a program in the code editor and select **Assemble**.
+4. Choose **6502 assembly** or **C (8-bit teaching subset)** as the source
+language. For C, select **Compile C to assembly**, inspect the output, then
+select **Assemble**.
 5. Select **Run** to execute continuously, or enable **Debugger** and select
    **Step** to execute one instruction at a time.
 
@@ -159,8 +162,11 @@ representations.
 - **Assemble** checks the source and loads the program into simulated memory.
   Programs start at address `$0600` by default.
 - Use **Samples** and **Load Sample** to put a built-in example in the editor.
-  The included samples demonstrate screen colour, keyboard input, labels and
-  loops, and the seven-segment display, including a counter, clock, stopwatch,
+  Assembly samples are grouped separately from the C examples. The C samples
+  include screen colour, labels and loops, and a seven-segment counter; each
+  has a corresponding assembly example for comparing the two source forms.
+  Other samples demonstrate keyboard input, labels and loops, and the
+  seven-segment display, including a counter, clock, stopwatch,
   byte-value display, keyboard-to-LED display, and binary, decimal, and
   hexadecimal calculators. The calculator samples accept digits and `+`, `-`,
   `*`, `/`, `=` from the keyboard; press **C** or **Enter** to clear. In
@@ -204,6 +210,33 @@ representations.
   the summary below.
 - **Guide** opens this README, formatted as a guide on GitHub, in a new tab.
 - **Notes** shows the emulator's memory map and screen colour values.
+
+## C-to-6502 demonstration
+
+Choose **C (8-bit teaching subset)** to enter a small C-like program. The
+built-in example shows the complete path: C source is translated into 6502
+assembly, the existing assembler turns that into machine code, and the emulator
+fetches, decodes, and executes the instructions. Compile first to inspect or
+edit the generated assembly; then select **Assemble**, **Run**, or use the
+debugger to step through the 6502 instructions. The **Samples** menu also has C
+versions of **Screen colour**, **Labels and loops**, and **Seven-segment
+counter**, alongside their assembly counterparts.
+
+The subset supports one `void main(void)` or `int main(void)` function,
+`unsigned char` local variables, byte-sized decimal or hexadecimal constants,
+addition and subtraction, assignments and increment/decrement, `if`/`else`,
+`while`, `return;` in `void main`, and a byte-valued `return expression;` in
+`int main` (the value is left in the accumulator when execution stops).
+Variables occupy zero-page addresses beginning at
+`$10`. The `pixel(value)` and `led(value)` teaching intrinsics write a byte to
+the first screen pixel at `$0200` and the first seven-segment display byte at
+`$00E0`, respectively. Comparisons are unsigned byte comparisons between a
+variable and a constant.
+
+This is intentionally not a general C compiler: it does not support headers,
+functions other than `main`, arrays, pointers, signed or multi-byte values,
+multiplication/division, or arbitrary C expressions. Arithmetic is 8-bit and
+wraps at 256. Unsupported syntax is reported in the message panel.
 
 ## Assembly syntax
 

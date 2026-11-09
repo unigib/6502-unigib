@@ -13,6 +13,18 @@
 function SimulatorWidget(node) {
   var $node = $(node);
   var currentFilename = "program.asm";
+  var currentLanguage = "asm";
+  var assemblyCode = "";
+  var cSource = [
+    "void main(void) {",
+    "  unsigned char color = 2;",
+    "  while (color < 8) {",
+    "    pixel(color);",
+    "    color++;",
+    "  }",
+    "  led(color);",
+    "}"
+  ].join("\n");
   var ui = UI();
   var display = Display();
   var memory = Memory();
@@ -22,6 +34,7 @@ function SimulatorWidget(node) {
 
   function initialize() {
     stripText();
+    assemblyCode = $node.find('.code').val();
     ui.initialize();
     ui.renderCode(-1);
     display.initialize();
@@ -71,6 +84,10 @@ function SimulatorWidget(node) {
       $node.find('.memoryMapDialog')[0].close();
     });
     $node.find('.loadSampleButton').click(loadSelectedSample);
+    $node.find('.languageSelect').change(function () {
+      setLanguageMode(this.value);
+    });
+    $node.find('.compileCButton').click(compileCSource);
     $node.find('.openFileButton').click(function () {
       $node.find('.fileInput').click();
     });
@@ -81,6 +98,11 @@ function SimulatorWidget(node) {
     $node.find('.code').on('input', function () {
       simulator.stop();
       simulator.stopDebugger();
+      if (currentLanguage === "c") {
+        cSource = $node.find('.code').val();
+      } else {
+        assemblyCode = $node.find('.code').val();
+      }
       ui.initialize();
       ui.renderCode(-1);
     });
@@ -109,16 +131,58 @@ function SimulatorWidget(node) {
     $(document).keypress(memory.storeKeypress);
   }
 
+  function setLanguageMode(language) {
+    var code = $node.find('.code');
+    if (language === currentLanguage) {
+      return;
+    }
+
+    if (currentLanguage === "c") {
+      cSource = code.val();
+    } else {
+      assemblyCode = code.val();
+    }
+
+    simulator.stop();
+    simulator.stopDebugger();
+    currentLanguage = language;
+    code.val(currentLanguage === "c" ? cSource : assemblyCode);
+    code.attr("aria-label", currentLanguage === "c" ? "C source code" : "6502 assembly source code");
+    $node.find('.languageSelect').val(currentLanguage);
+    ui.initialize();
+    ui.renderCode(-1);
+  }
+
+  function compileCSource() {
+    var generatedAssembly;
+    cSource = $node.find('.code').val();
+    $node.find('.messages code').empty();
+    try {
+      generatedAssembly = CCompiler.compile(cSource);
+    } catch (error) {
+      if (error.name !== "CCompileError") {
+        throw error;
+      }
+      message("C compile error: " + escapeMessage(error.message));
+      return;
+    }
+
+    assemblyCode = generatedAssembly;
+    setLanguageMode("asm");
+    setEditorCode(assemblyCode, "program.c.asm");
+    message("C compiled to 6502 assembly. Inspect the output, then select Assemble.");
+  }
+
   function loadSelectedSample() {
     var sampleName = $node.find('.sampleSelect').val();
-    var sample = ASSEMBLY_SAMPLES[sampleName];
+    var sample = ASSEMBLY_SAMPLES[sampleName] || C_SAMPLES[sampleName];
 
     if (!sample) {
       message("Choose a sample before selecting Load Sample.");
       return;
     }
 
-    if (replaceCode(sample.code, sample.filename)) {
+    if (replaceCode(sample.code, sample.filename, sample.language || "asm")) {
       message("Loaded sample " + escapeMessage(sample.filename) + ".");
     }
     $node.find('.sampleSelect').val("");
@@ -186,18 +250,28 @@ function SimulatorWidget(node) {
 
   function confirmCodeReplacement() {
     var currentCode = $node.find('.code').val();
-    return !currentCode || window.confirm("Replace the assembly currently in the editor?");
+    var language = currentLanguage === "c" ? "C source" : "assembly";
+    return !currentCode || window.confirm("Replace the " + language + " currently in the editor?");
   }
 
-  function replaceCode(code, filename) {
+  function replaceCode(code, filename, language) {
     if ($node.find('.code').val() !== code && !confirmCodeReplacement()) {
       return false;
     }
-    setEditorCode(code, filename);
+    setEditorCode(code, filename, language);
     return true;
   }
 
-  function setEditorCode(code, filename) {
+  function setEditorCode(code, filename, language) {
+    language = language || "asm";
+    if (currentLanguage !== language) {
+      setLanguageMode(language);
+    }
+    if (language === "c") {
+      cSource = code;
+    } else {
+      assemblyCode = code;
+    }
     $node.find('.code').val(code).trigger('input');
     currentFilename = filename || "program.asm";
     $node.find('.sampleSelect').val("");
@@ -258,18 +332,21 @@ function SimulatorWidget(node) {
 
 
     function setState(state) {
-      $node.find('.assembleButton').attr('disabled', !state.assemble);
+      var cMode = currentLanguage === "c";
+      $node.find('.assembleButton').attr('disabled', !state.assemble || cMode);
       if (state.run) {
-        $node.find('.runButton').attr('disabled', !state.run[0]);
+        $node.find('.runButton').attr('disabled', !state.run[0] || cMode);
         $node.find('.runButton').val(state.run[1]);
       }
-      $node.find('.resetButton').attr('disabled', !state.reset);
-      $node.find('.hexdumpButton').attr('disabled', !state.hexdump);
-      $node.find('.disassembleButton').attr('disabled', !state.disassemble);
-      $node.find('.debug').attr('disabled', !state.debug[0]);
+      $node.find('.resetButton').attr('disabled', !state.reset || cMode);
+      $node.find('.hexdumpButton').attr('disabled', !state.hexdump || cMode);
+      $node.find('.disassembleButton').attr('disabled', !state.disassemble || cMode);
+      $node.find('.debug').attr('disabled', !state.debug[0] || cMode);
       $node.find('.debug').attr('checked', state.debug[1]);
-      $node.find('.stepButton').attr('disabled', !state.debug[1]);
-      $node.find('.gotoButton').attr('disabled', !state.debug[1]);
+      $node.find('.stepButton').attr('disabled', !state.debug[1] || cMode);
+      $node.find('.gotoButton').attr('disabled', !state.debug[1] || cMode);
+      $node.find('.compileCButton').attr('disabled', !cMode);
+      $node.find('.saveFileButton').attr('disabled', cMode);
       currentState = state;
     }
 

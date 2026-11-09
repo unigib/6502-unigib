@@ -25,7 +25,7 @@
         <input type="button" value="Disassemble" class="disassembleButton" />
         <input type="button" value="Notes" class="notesButton" />
         <input type="button" value="Memory Map" class="memoryMapButton" />
-        <a class="guideButton" href="https://github.com/unigib/6502js#readme" target="_blank" rel="noopener noreferrer" title="Open the 6502 assembly guide in a new tab">Guide</a>
+        <a class="guideButton" href="https://github.com/unigib/6502-unigib#readme" target="_blank" rel="noopener noreferrer" title="Open the 6502 assembly guide in a new tab">Guide</a>
         <div class="frequencyControl">
           <label for="frequencySelect">Execution rate</label>
           <select class="frequencySelect" id="frequencySelect" aria-describedby="frequencyHelp">
@@ -43,22 +43,29 @@
           <label for="sampleSelect">Samples</label>
           <select class="sampleSelect" id="sampleSelect">
             <option value="">Choose a sample...</option>
-            <option value="screen-colour">Screen colour</option>
-            <option value="keyboard-input">Keyboard input</option>
-            <option value="keyboard-led-display">Keyboard to LED display</option>
-            <option value="label-loop">Labels and loops</option>
-            <option value="seven-segment">Seven-segment display</option>
-            <option value="seven-segment-counter">Seven-segment counter</option>
-            <option value="seven-segment-count-up-down">Count up/down with LED</option>
-            <option value="seven-segment-auto-counter">Automatic LED counter</option>
-            <option value="seven-segment-auto-counter-bcd">Automatic BCD counter</option>
-            <option value="seven-segment-auto-counter-binary">Automatic binary counter</option>
-            <option value="calculator-binary">Binary calculator</option>
-            <option value="calculator-decimal">Decimal calculator</option>
-            <option value="calculator-hexadecimal">Hexadecimal calculator</option>
-            <option value="seven-segment-clock">24-hour clock</option>
-            <option value="seven-segment-stopwatch">Stopwatch</option>
-            <option value="seven-segment-register">Display byte in A</option>
+            <optgroup label="6502 assembly">
+              <option value="screen-colour">Screen colour</option>
+              <option value="keyboard-input">Keyboard input</option>
+              <option value="keyboard-led-display">Keyboard to LED display</option>
+              <option value="label-loop">Labels and loops</option>
+              <option value="seven-segment">Seven-segment display</option>
+              <option value="seven-segment-counter">Seven-segment counter</option>
+              <option value="seven-segment-count-up-down">Count up/down with LED</option>
+              <option value="seven-segment-auto-counter">Automatic LED counter</option>
+              <option value="seven-segment-auto-counter-bcd">Automatic BCD counter</option>
+              <option value="seven-segment-auto-counter-binary">Automatic binary counter</option>
+              <option value="calculator-binary">Binary calculator</option>
+              <option value="calculator-decimal">Decimal calculator</option>
+              <option value="calculator-hexadecimal">Hexadecimal calculator</option>
+              <option value="seven-segment-clock">24-hour clock</option>
+              <option value="seven-segment-stopwatch">Stopwatch</option>
+              <option value="seven-segment-register">Display byte in A</option>
+            </optgroup>
+            <optgroup label="C (8-bit teaching subset)">
+              <option value="c-screen-colour">C: Screen colour</option>
+              <option value="c-label-loop">C: Labels and loops</option>
+              <option value="c-seven-segment-counter">C: Seven-segment counter</option>
+            </optgroup>
           </select>
           <input type="button" value="Load Sample" class="loadSampleButton" />
           <input type="button" value="Open ASM" class="openFileButton" />
@@ -69,6 +76,20 @@
 
       <div class="workbench">
         <section class="editorColumn" aria-label="Assembly editor and CPU state">
+          <div class="sourceToolbar">
+            <label for="languageSelect">Source language</label>
+            <select class="languageSelect" id="languageSelect">
+              <option value="asm">6502 assembly</option>
+              <option value="c">C (8-bit teaching subset)</option>
+            </select>
+            <input type="button" value="Compile C to assembly" class="compileCButton" />
+            <span class="sourceHelp">Compile, inspect the generated assembly, then Assemble and Run.</span>
+          </div>
+          <ol class="executionPipeline" aria-label="Program execution stages">
+            <li>C source</li>
+            <li>6502 assembly</li>
+            <li>Fetch, decode, execute</li>
+          </ol>
           <div class="codeEditor">
             <pre class="lineNumbers" aria-hidden="true"><code></code></pre>
             <pre class="codeHighlight" aria-hidden="true"><code></code></pre>
@@ -220,6 +241,7 @@ $f: Light grey
     <script src="es5-shim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script src="samples.js"></script>
+    <script src="c-compiler.js"></script>
     <script src="assembler.js"></script>
   </body>
 </html>

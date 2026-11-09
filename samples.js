@@ -996,3 +996,35 @@ var ASSEMBLY_SAMPLES = {
       "BRK"
   }
 };
+
+var C_SAMPLES = {
+  "c-screen-colour": {
+    filename: "screen-colour.c",
+    language: "c",
+    code: "void main(void) {\n" +
+      "  pixel(2);\n" +
+      "}"
+  },
+  "c-label-loop": {
+    filename: "label-loop.c",
+    language: "c",
+    code: "void main(void) {\n" +
+      "  unsigned char color = 0;\n" +
+      "  while (color < 5) {\n" +
+      "    color++;\n" +
+      "  }\n" +
+      "  pixel(color);\n" +
+      "}"
+  },
+  "c-seven-segment-counter": {
+    filename: "seven-segment-counter.c",
+    language: "c",
+    code: "void main(void) {\n" +
+      "  unsigned char count = 0;\n" +
+      "  while (count < 255) {\n" +
+      "    count++;\n" +
+      "    led(count);\n" +
+      "  }\n" +
+      "}"
+  }
+};
