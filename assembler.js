@@ -112,6 +112,11 @@ function SimulatorWidget(node) {
       $node.find('.codeHighlight').scrollLeft(editor.scrollLeft);
       $node.find('.lineNumbers').scrollTop(editor.scrollTop);
     });
+    $node.find('.lineNumbers').on('click', '.line-number', function (event) {
+      event.preventDefault();
+      ui.toggleBreakpoint(parseInt($(this).attr('data-line'), 10));
+      simulator.syncBreakpoints();
+    });
     $node.find('.directionKey').on('mousedown', function (event) {
       event.preventDefault();
     });
@@ -146,6 +151,7 @@ function SimulatorWidget(node) {
     simulator.stop();
     simulator.stopDebugger();
     currentLanguage = language;
+    ui.clearBreakpoints();
     code.val(currentLanguage === "c" ? cSource : assemblyCode);
     code.attr("aria-label", currentLanguage === "c" ? "C source code" : "6502 assembly source code");
     $node.find('.languageSelect').val(currentLanguage);
@@ -267,6 +273,7 @@ function SimulatorWidget(node) {
     if (currentLanguage !== language) {
       setLanguageMode(language);
     }
+    ui.clearBreakpoints();
     if (language === "c") {
       cSource = code;
     } else {
@@ -290,6 +297,8 @@ function SimulatorWidget(node) {
 
   function UI() {
     var currentState;
+    var currentLine = -1;
+    var breakpoints = {};
 
     var start = {
       assemble: true,
@@ -350,12 +359,13 @@ function SimulatorWidget(node) {
       currentState = state;
     }
 
-    function renderCode(currentLine) {
+    function renderCode(line) {
       var lines = $node.find('.code').val().split("\n");
       var html = "";
       var lineNumbers = "";
       var tokenPattern = /(;.*$)|(^\s*[A-Za-z_][\w]*:)|(\b(?:ADC|AND|ASL|BCC|BCS|BEQ|BIT|BMI|BNE|BPL|BRK|BVC|BVS|CLC|CLD|CLI|CLV|CMP|CPX|CPY|DCB|DEC|DEFINE|DEX|DEY|EOR|INC|INX|INY|JMP|JSR|LDA|LDX|LDY|LSR|NOP|ORA|PHA|PHP|PLA|PLP|ROL|ROR|RTI|RTS|SBC|SEC|SED|SEI|STA|STX|STY|TAX|TAY|TSX|TXA|TXS|TYA)\b)|(#?[$%][0-9a-f]+|#?\d+)|("[^"]*"|'[^']*')/gi;
 
+      currentLine = line;
       for (var i = 0; i < lines.length; i++) {
         var source = escapeHtml(lines[i]);
         var highlighted = source.replace(tokenPattern, function (token, comment, label, opcode, number, string) {
@@ -364,10 +374,18 @@ function SimulatorWidget(node) {
               (opcode ? "syntax-opcode" : (number ? "syntax-number" : "syntax-string")));
           return '<span class="' + className + '">' + token + '</span>';
         });
-        var lineClass = i === currentLine ? "code-line code-line-current" : "code-line";
+        var lineClass = i === line ? "code-line code-line-current" : "code-line";
         html += '<span class="' + lineClass + '">' + highlighted + '</span>';
-        var numberClass = i === currentLine ? "line-number line-number-current" : "line-number";
-        lineNumbers += '<span class="' + numberClass + '">' + (i + 1) + '</span>';
+        var numberClass = "line-number";
+        if (i === line) {
+          numberClass += " line-number-current";
+        }
+        if (breakpoints[i]) {
+          numberClass += " line-number-breakpoint";
+        }
+        lineNumbers += '<button type="button" class="' + numberClass +
+          '" data-line="' + i + '" aria-label="Toggle breakpoint on line ' + (i + 1) +
+          '" aria-pressed="' + (breakpoints[i] ? "true" : "false") + '">' + (i + 1) + '</button>';
       }
 
       $node.find('.codeHighlight code').html(html);
@@ -412,6 +430,30 @@ function SimulatorWidget(node) {
         $node.find('.codeHighlight').scrollTop(editor.scrollTop);
         $node.find('.lineNumbers').scrollTop(editor.scrollTop);
       }
+    }
+
+    function toggleBreakpoint(line) {
+      if (breakpoints[line]) {
+        delete breakpoints[line];
+      } else {
+        breakpoints[line] = true;
+      }
+      renderCode(currentLine);
+    }
+
+    function getBreakpointLines() {
+      var lines = [];
+      for (var line in breakpoints) {
+        if (Object.prototype.hasOwnProperty.call(breakpoints, line)) {
+          lines.push(parseInt(line, 10));
+        }
+      }
+      return lines;
+    }
+
+    function clearBreakpoints() {
+      breakpoints = {};
+      renderCode(currentLine);
     }
 
     function showInputKey(keyCode) {
@@ -461,6 +503,9 @@ function SimulatorWidget(node) {
       showNotes: showNotes,
       renderCode: renderCode,
       highlightLine: highlightLine,
+      toggleBreakpoint: toggleBreakpoint,
+      getBreakpointLines: getBreakpointLines,
+      clearBreakpoints: clearBreakpoints,
       showInputKey: showInputKey
     };
   }
@@ -648,6 +693,8 @@ function SimulatorWidget(node) {
     var regPC = 0x600;
     var regSP = 0xff;
     var codeRunning = false;
+    var breakpointAddresses = {};
+    var breakpointPausedAtPC = null;
     var debug = false;
     var monitoring = false;
     var executeId;
@@ -1931,6 +1978,25 @@ function SimulatorWidget(node) {
     //             This is the main part of the CPU simulator.
     function execute(debugging) {
       if (!codeRunning && !debugging) { return; }
+      if (breakpointPausedAtPC !== null && regPC !== breakpointPausedAtPC) {
+        breakpointPausedAtPC = null;
+      }
+      if (debugging && breakpointPausedAtPC === regPC) {
+        breakpointPausedAtPC = null;
+      }
+      if (!debugging && codeRunning &&
+          Object.prototype.hasOwnProperty.call(breakpointAddresses, regPC)) {
+        if (breakpointPausedAtPC === regPC) {
+          breakpointPausedAtPC = null;
+        } else {
+          breakpointPausedAtPC = regPC;
+          stop();
+          ui.stop();
+          ui.highlightLine(breakpointAddresses[regPC]);
+          message("Breakpoint reached at line " + (breakpointAddresses[regPC] + 1) + ".");
+          return;
+        }
+      }
 
       setRandomByte();
       executeNextInstruction();
@@ -2039,6 +2105,7 @@ function SimulatorWidget(node) {
     // reset() - Reset CPU and memory.
     function reset() {
       display.reset();
+      breakpointPausedAtPC = null;
       for (var i = 0; i < 0x600; i++) { // clear ZP, stack and screen
         memory.set(i, 0x00);
       }
@@ -2047,6 +2114,14 @@ function SimulatorWidget(node) {
       regSP = 0xff;
       regP = 0x30;
       updateDebugInfo();
+    }
+
+    function syncBreakpoints() {
+      breakpointAddresses = assembler.getBreakpointAddresses(ui.getBreakpointLines());
+      if (breakpointPausedAtPC !== null &&
+          !Object.prototype.hasOwnProperty.call(breakpointAddresses, breakpointPausedAtPC)) {
+        breakpointPausedAtPC = null;
+      }
     }
 
     function stop() {
@@ -2069,7 +2144,8 @@ function SimulatorWidget(node) {
       stop: stop,
       setFrequency: setFrequency,
       toggleMonitor: toggleMonitor,
-      updateMonitor: updateMonitor
+      updateMonitor: updateMonitor,
+      syncBreakpoints: syncBreakpoints
     };
   }
 
@@ -2203,6 +2279,7 @@ function SimulatorWidget(node) {
     var codeLen;
     var codeAssembledOK = false;
     var sourceLineByAddress = {};
+    var sourceAddressByLine = {};
     var currentSourceLine = null;
 
     var Opcodes = [
@@ -2272,8 +2349,10 @@ function SimulatorWidget(node) {
       simulator.reset();
       labels.reset();
       sourceLineByAddress = {};
+      sourceAddressByLine = {};
       currentSourceLine = null;
       defaultCodePC = 0x600;
+      simulator.syncBreakpoints();
       $node.find('.messages code').empty();
 
       var code = $node.find('.code').val();
@@ -2312,6 +2391,7 @@ function SimulatorWidget(node) {
       if (codeAssembledOK) {
         ui.assembleSuccess();
         memory.set(defaultCodePC, 0x00); //set a null byte at the end of the code
+        simulator.syncBreakpoints();
       } else {
         var str = lines[i].replace("<", "&lt;").replace(">", "&gt;");
         message("**Syntax error line " + (i + 1) + ": " + str + "**");
@@ -2337,6 +2417,11 @@ function SimulatorWidget(node) {
 
       input = input.replace(/^\s+/, "");
       input = input.replace(/\s+$/, "");
+
+      if (currentSourceLine !== null && input.match(/^\w+:/) &&
+          !Object.prototype.hasOwnProperty.call(sourceAddressByLine, currentSourceLine)) {
+        sourceAddressByLine[currentSourceLine] = defaultCodePC;
+      }
 
       // Find command or label
 
@@ -2773,6 +2858,9 @@ function SimulatorWidget(node) {
     function pushByte(value) {
       if (currentSourceLine !== null) {
         sourceLineByAddress[defaultCodePC] = currentSourceLine;
+        if (!Object.prototype.hasOwnProperty.call(sourceAddressByLine, currentSourceLine)) {
+          sourceAddressByLine[currentSourceLine] = defaultCodePC;
+        }
       }
       memory.set(defaultCodePC, value & 0xff);
       defaultCodePC++;
@@ -2985,6 +3073,16 @@ function SimulatorWidget(node) {
       getSourceLine: function (address) {
         return Object.prototype.hasOwnProperty.call(sourceLineByAddress, address) ?
           sourceLineByAddress[address] : -1;
+      },
+      getBreakpointAddresses: function (lines) {
+        var addresses = {};
+        for (var i = 0; i < lines.length; i++) {
+          var address = sourceAddressByLine[lines[i]];
+          if (typeof address !== "undefined") {
+            addresses[address] = lines[i];
+          }
+        }
+        return addresses;
       },
       hexdump: hexdump,
       disassemble: disassemble

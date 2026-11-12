@@ -188,6 +188,9 @@ representations.
   Replacing non-empty editor contents asks for confirmation.
 - The editor displays line numbers and syntax highlighting. When debugging,
   the current instruction's source line is highlighted and scrolled into view.
+  Click a line number to toggle a breakpoint, including before assembling;
+  **Run** pauses before executing marked instruction or label lines. Click
+  **Run** again to continue to the next breakpoint.
 - **Run** executes the assembled program. It changes to **Stop** while the
   program is running. Use **Execution rate** to select an approximate rate
   from 1 MHz down to 1 Hz (about one instruction per second). At 10 Hz and

@@ -84,7 +84,7 @@
               <option value="c">C (8-bit teaching subset)</option>
             </select>
             <input type="button" value="Compile C to assembly" class="compileCButton" />
-            <span class="sourceHelp">Compile, inspect the generated assembly, then Assemble and Run.</span>
+            <span class="sourceHelp">In assembly, click a line number to toggle a breakpoint before or after assembling.</span>
           </div>
           <ol class="executionPipeline" aria-label="Program execution stages">
             <li>C source</li>
@@ -92,7 +92,7 @@
             <li>Fetch, decode, execute</li>
           </ol>
           <div class="codeEditor">
-            <pre class="lineNumbers" aria-hidden="true"><code></code></pre>
+            <pre class="lineNumbers" aria-label="Source line numbers; click a line number to toggle a breakpoint"><code></code></pre>
             <pre class="codeHighlight" aria-hidden="true"><code></code></pre>
             <textarea class="code" wrap="off" spellcheck="false" aria-label="6502 assembly source code"></textarea>
           </div>
