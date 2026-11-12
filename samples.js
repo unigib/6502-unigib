@@ -692,6 +692,199 @@ var ASSEMBLY_SAMPLES = {
       "STA $00E0\n" +
       "JMP counter"
   },
+  "doom-shooter": {
+    filename: "doom-shooter.asm",
+    code: "; Doom-inspired 32x32 shooting gallery. Click the screen, then press Up to fire.\n" +
+      "; Press lowercase R to reset the score. The target flashes when you shoot.\n" +
+      "; This is a small pixel-art demo for the emulator, not the original Doom game.\n" +
+      "define score $f8\n" +
+      "define key $f9\n" +
+      "start:\n" +
+      "LDX #$00\n" +
+      "LDA #$0B\n" +
+      "clearScreen:\n" +
+      "STA $0200,X\n" +
+      "STA $0300,X\n" +
+      "STA $0400,X\n" +
+      "STA $0500,X\n" +
+      "INX\n" +
+      "BNE clearScreen\n" +
+      "; Fill the ceiling and floor with brown.\n" +
+      "LDX #$00\n" +
+      "LDA #$09\n" +
+      "drawCeiling:\n" +
+      "STA $0200,X\n" +
+      "STA $0220,X\n" +
+      "STA $0240,X\n" +
+      "STA $0260,X\n" +
+      "INX\n" +
+      "CPX #$20\n" +
+      "BNE drawCeiling\n" +
+      "LDX #$00\n" +
+      "LDA #$09\n" +
+      "drawFloor:\n" +
+      "STA $04A0,X\n" +
+      "STA $04C0,X\n" +
+      "STA $04E0,X\n" +
+      "STA $0500,X\n" +
+      "STA $0520,X\n" +
+      "STA $0540,X\n" +
+      "STA $0560,X\n" +
+      "STA $0580,X\n" +
+      "STA $05A0,X\n" +
+      "STA $05C0,X\n" +
+      "STA $05E0,X\n" +
+      "INX\n" +
+      "CPX #$20\n" +
+      "BNE drawFloor\n" +
+      "; Add bright stripes and rails to make the floor look like it recedes.\n" +
+      "LDA #$08\n" +
+      "LDX #$00\n" +
+      "drawFloorStripes:\n" +
+      "STA $04E0,X\n" +
+      "STA $0520,X\n" +
+      "STA $0560,X\n" +
+      "STA $05A0,X\n" +
+      "STA $05E0,X\n" +
+      "INX\n" +
+      "CPX #$20\n" +
+      "BNE drawFloorStripes\n" +
+      "LDY #$00\n" +
+      "LDX #$0A\n" +
+      "drawFloorRails:\n" +
+      "LDA #$07\n" +
+      "STA $04AF,Y\n" +
+      "STA $04B0,Y\n" +
+      "TYA\n" +
+      "CLC\n" +
+      "ADC #$20\n" +
+      "TAY\n" +
+      "DEX\n" +
+      "BNE drawFloorRails\n" +
+      "; Draw the doorway sides and lintel.\n" +
+      "LDX #$08\n" +
+      "LDY #$00\n" +
+      "drawDoorSides:\n" +
+      "LDA #$0C\n" +
+      "STA $0264,Y\n" +
+      "STA $027B,Y\n" +
+      "TYA\n" +
+      "CLC\n" +
+      "ADC #$20\n" +
+      "TAY\n" +
+      "DEX\n" +
+      "BNE drawDoorSides\n" +
+      "LDA #$0C\n" +
+      "LDX #$04\n" +
+      "drawLintel:\n" +
+      "STA $02C0,X\n" +
+      "INX\n" +
+      "CPX #$1C\n" +
+      "BNE drawLintel\n" +
+      "; Pixel-art demon: head, shoulders, body, and legs.\n" +
+      "LDX #$08\n" +
+      "LDA #$02\n" +
+      "drawDemonHead:\n" +
+      "STA $032C,X\n" +
+      "STA $034C,X\n" +
+      "DEX\n" +
+      "BNE drawDemonHead\n" +
+      "LDX #$0C\n" +
+      "drawDemonShoulders:\n" +
+      "STA $036A,X\n" +
+      "STA $038A,X\n" +
+      "STA $03AA,X\n" +
+      "DEX\n" +
+      "BNE drawDemonShoulders\n" +
+      "LDX #$08\n" +
+      "drawDemonBody:\n" +
+      "STA $03AC,X\n" +
+      "STA $03CC,X\n" +
+      "DEX\n" +
+      "BNE drawDemonBody\n" +
+      "LDX #$04\n" +
+      "drawDemonLegs:\n" +
+      "STA $03ED,X\n" +
+      "STA $03F1,X\n" +
+      "STA $040D,X\n" +
+      "STA $0411,X\n" +
+      "DEX\n" +
+      "BNE drawDemonLegs\n" +
+      "; Draw the player's weapon at the bottom of the screen.\n" +
+      "LDA #$0C\n" +
+      "LDX #$08\n" +
+      "drawGunBarrel:\n" +
+      "STA $054C,X\n" +
+      "STA $056C,X\n" +
+      "DEX\n" +
+      "BNE drawGunBarrel\n" +
+      "LDX #$10\n" +
+      "drawGunBody:\n" +
+      "STA $0588,X\n" +
+      "STA $05A8,X\n" +
+      "DEX\n" +
+      "BNE drawGunBody\n" +
+      "LDX #$18\n" +
+      "drawGunBase:\n" +
+      "STA $05C4,X\n" +
+      "STA $05E4,X\n" +
+      "DEX\n" +
+      "BNE drawGunBase\n" +
+      "; Bright eyes and the aiming point.\n" +
+      "LDA #$07\n" +
+      "STA $036D\n" +
+      "STA $0372\n" +
+      "LDA #$01\n" +
+      "STA $0390\n" +
+      "STA $038F\n" +
+      "STA $0391\n" +
+      "STA $0370\n" +
+      "STA $03B0\n" +
+      "LDA #$00\n" +
+      "STA score\n" +
+      "STA $00E7\n" +
+      "main:\n" +
+      "LDA $00FF\n" +
+      "BEQ main\n" +
+      "STA key\n" +
+      "LDA #$00\n" +
+      "STA $00FF\n" +
+      "LDA key\n" +
+      "CMP #$26\n" +
+      "BEQ fire\n" +
+      "CMP #$72\n" +
+      "BEQ resetScore\n" +
+      "JMP main\n" +
+      "fire:\n" +
+      "INC score\n" +
+      "LDA score\n" +
+      "STA $00E7\n" +
+      "LDA #$07\n" +
+      "STA $0390\n" +
+      "STA $038F\n" +
+      "STA $0391\n" +
+      "STA $0370\n" +
+      "STA $03B0\n" +
+      "LDA #$08\n" +
+      "STA $054F\n" +
+      "STA $0550\n" +
+      "STA $056F\n" +
+      "STA $0570\n" +
+      "LDA #$0A\n" +
+      "LDX #$0C\n" +
+      "flashTarget:\n" +
+      "STA $036A,X\n" +
+      "STA $038A,X\n" +
+      "STA $03AA,X\n" +
+      "DEX\n" +
+      "BNE flashTarget\n" +
+      "JMP main\n" +
+      "resetScore:\n" +
+      "LDA #$00\n" +
+      "STA score\n" +
+      "STA $00E7\n" +
+      "JMP main"
+  },
   "seven-segment-count-up-down": {
     filename: "seven-segment-count-up-down.asm",
     code: "; Press + or Up to count up; press - or Down to count down.\n" +

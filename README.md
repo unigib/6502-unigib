@@ -24,7 +24,8 @@ quick experimentation with 6502 machine code.
 - `assembler.js` — assembler, emulator core, and UI logic.
 - `c-compiler.js` — compiler for the small, browser-based C teaching subset.
 - `samples.js` — bundled sample programs.
-- `samples/` — example assembly files, including the Snake game.
+- `samples/` — example assembly files, including the Snake game and
+  Doom-inspired shooter.
 - `style.css` — styling for the classroom-themed interface.
 - `logo.png` — University of Gibraltar branding.
 
@@ -167,7 +168,8 @@ representations.
   has a corresponding assembly example for comparing the two source forms.
   Other samples demonstrate keyboard input, labels and loops, and the
   seven-segment display, including a counter, clock, stopwatch,
-  byte-value display, keyboard-to-LED display, and binary, decimal, and
+  byte-value display, keyboard-to-LED display, the Doom-inspired shooting
+  gallery, and binary, decimal, and
   hexadecimal calculators. The calculator samples accept digits and `+`, `-`,
   `*`, `/`, `=` from the keyboard; press **C** or **Enter** to clear. In
   **Keyboard to LED display**, each key's code appears as a hexadecimal byte;
@@ -175,7 +177,12 @@ representations.
   program, select
   **Open ASM**, choose
   `samples/snake.asm`, then assemble and run it. Steer Snake with the arrow
-  keys or on-screen arrow buttons.
+  keys or on-screen arrow buttons. To try the Doom-inspired shooting gallery,
+  select **Doom corridor shooter** from the Samples menu, assemble, and run;
+  click the emulated screen, then press **Up** to fire. The floor has
+  bright perspective stripes and the demon flashes when hit. Press lowercase
+  **r** to reset the score shown on the rightmost LED pair. You can also open
+  `samples/doom-shooter.asm` directly.
 - **Open ASM** opens a local `.asm`, `.s`, `.6502`, or `.txt` file in the
   editor. **Save ASM** downloads the current source as an assembly file.
   Replacing non-empty editor contents asks for confirmation.
